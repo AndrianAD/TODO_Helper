@@ -33,6 +33,20 @@ class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
         }
     }
 
+    fun editEvent(
+        name: String = "",
+        description: String = "",
+        id: Int = -1
+    ): MutableLiveData<NetworkResponse<Any>> {
+        return if (hasNetworkConnection()) {
+            repository.editEvent(
+                toName = name,
+                toDescription = description,
+                toId = id
+            )
+        } else MutableLiveData(NetworkResponse.Error("No Internet"))
+    }
+
 
     fun showToast(message: String) {
         toastMessage.value = message

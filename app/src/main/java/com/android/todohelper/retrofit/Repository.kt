@@ -28,6 +28,13 @@ class Repository() {
         })
     }
 
+    fun deleteEvent(name: String, description: String, id: Int) {
+        retrofit!!.editEvent(name, description, id).enqueue(object : Callback<String?> {
+            override fun onResponse(call: Call<String?>, response: Response<String?>) {}
+            override fun onFailure(call: Call<String?>, t: Throwable) {}
+        })
+    }
+
 
     fun login(email: String, password: String): MutableLiveData<NetworkResponse<Any>> {
         val callback = MutableLiveData<NetworkResponse<Any>>()
@@ -67,6 +74,24 @@ class Repository() {
             override fun onResponse(call: Call<String?>, response: Response<String?>) {}
             override fun onFailure(call: Call<String?>, t: Throwable) {}
         })
+    }
+
+    fun editEvent(
+        toName: String,
+        toDescription: String,
+        toId: Int
+    ): MutableLiveData<NetworkResponse<Any>> {
+        val callback = MutableLiveData<NetworkResponse<Any>>()
+        retrofit!!.editEvent(toName, toDescription, toId).enqueue(object : Callback<String?> {
+            override fun onResponse(call: Call<String?>, response: Response<String?>) {
+                callback.value = response.body()?.let { NetworkResponse.Success(it) }
+            }
+
+            override fun onFailure(call: Call<String?>, t: Throwable) {
+                callback.value = t.message?.let { NetworkResponse.Error(it) }
+            }
+        })
+        return callback
     }
 }
 

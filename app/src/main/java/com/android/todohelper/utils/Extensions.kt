@@ -5,11 +5,12 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-
+import android.os.SystemClock
 import android.text.Editable
 import android.util.Log
 import android.util.Patterns
 import android.view.View
+import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
@@ -17,15 +18,13 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.RecyclerView
 import com.android.todohelper.UserActivity
 import com.android.todohelper.data.User
 import com.google.android.material.snackbar.Snackbar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.util.concurrent.atomic.AtomicBoolean
 
-
+var mLastClickTime: Long = 0
 fun Context.makeAllertDialogNO(message: String, negativeButton: String) =
     AlertDialog.Builder(this).setMessage(message)
         .setNegativeButton(negativeButton, null)
@@ -50,7 +49,9 @@ fun Context.UserActivityIntent(it: User): Intent {
 
 }
 
-
+fun EditText.isEmpty(): Boolean{
+     return this.text.toString().trim().isEmpty()
+}
 
 
 //
@@ -99,10 +100,6 @@ fun Editable.isValidEmail(): Boolean {
     return Patterns.EMAIL_ADDRESS.matcher(this).matches()
 }
 
-fun Editable.isValidPhone(): Boolean {
-    return Patterns.PHONE.matcher(this).matches()
-}
-
 
 fun String.isOnlyLetters(): Boolean {
     this.trim()
@@ -118,23 +115,6 @@ fun String.isOnlyLetters(): Boolean {
     return true
 }
 
-fun String.isOnlyLettersSpace(): Boolean {
-    this.trim()
-    var count = 0
-    var letter: Char?
-    while (count <= this.length - 1) {
-        letter = this[count]
-        if (!Character.isLetter(letter) && letter != ' ') {
-            return false
-        }
-        count++
-    }
-    return true
-}
-
-fun String.isValidEmail(): Boolean {
-    return Patterns.EMAIL_ADDRESS.matcher(this).matches()
-}
 
 fun String.isValidPhone(): Boolean {
     return Patterns.PHONE.matcher(this).matches()
@@ -144,26 +124,6 @@ fun String.isValidURL(): Boolean {
     return Patterns.WEB_URL.matcher(this).matches()
 }
 
-
-fun String.isValidNumberNotImportant(): Boolean {
-    return if (this.isNotEmpty()) {
-        this.isValidNumber()
-    } else true
-}
-
-fun String.isValidNumber(): Boolean {
-    this.trim()
-    var count = 0
-    var letter: Char?
-    while (count <= this.length - 1) {
-        letter = this[count]
-        if (!Character.isDigit(letter)) {
-            return false
-        }
-        count++
-    }
-    return true
-}
 
 class SingleLiveEvent<T> : MutableLiveData<T>() {
 
@@ -200,8 +160,10 @@ fun AppCompatActivity.checkSelfPermissionCompat(permission: String) =
 fun AppCompatActivity.shouldShowRequestPermissionRationaleCompat(permission: String) =
     ActivityCompat.shouldShowRequestPermissionRationale(this, permission)
 
-fun AppCompatActivity.requestPermissionsCompat(permissionsArray: Array<String>,
-                                               requestCode: Int) {
+fun AppCompatActivity.requestPermissionsCompat(
+    permissionsArray: Array<String>,
+    requestCode: Int
+) {
     ActivityCompat.requestPermissions(this, permissionsArray, requestCode)
 }
 
@@ -234,6 +196,14 @@ fun View.showSnackbar(
             action(this)
         }.show()
     }
+}
+
+fun preventMultiClick(): Boolean {
+    if (SystemClock.elapsedRealtime() - mLastClickTime < 2000) {
+        return true
+    }
+    mLastClickTime = SystemClock.elapsedRealtime()
+    return false
 }
 
 

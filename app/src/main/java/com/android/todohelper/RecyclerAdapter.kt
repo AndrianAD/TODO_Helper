@@ -1,4 +1,5 @@
 package com.android.todohelper
+
 import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
@@ -15,16 +16,11 @@ import org.koin.core.get
 import java.util.*
 
 
-class RecyclerAdapter(var context: Context) :
+class RecyclerAdapter(var context: Context, var onClickEvent:OnClickEvent) :
     RecyclerView.Adapter<RecyclerAdapter.ViewHolder>(), ItemTouchHelperAdapter, KoinComponent {
 
     private lateinit var eventsList: ArrayList<Event>
-    private lateinit var adapterCallback: AdapterCallback
     var repository: Repository = get()
-
-    fun setAdapterCallback(callback: AdapterCallback) {
-        adapterCallback = callback
-    }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val v = LayoutInflater.from(viewGroup.context)
@@ -33,11 +29,11 @@ class RecyclerAdapter(var context: Context) :
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-        val event: Event = eventsList.get(position)
+        val event: Event = eventsList[position]
         viewHolder.name?.text = event.name
         viewHolder.description?.text = event.description
         viewHolder.time?.text = event.time
-
+        viewHolder.cardView!!.setOnClickListener { onClickEvent.onClick(event,position) }
 
     }
 
@@ -81,9 +77,7 @@ class RecyclerAdapter(var context: Context) :
             ) { _, _ ->
                 eventsList.removeAt(position)
                 notifyItemRemoved(position)
-                //delete
                 repository.deleteEvent(event.eventId)
-
             }
         val alert = builder.create()
         alert.show()
@@ -104,8 +98,8 @@ class RecyclerAdapter(var context: Context) :
         return true
     }
 
-    interface AdapterCallback {
-        fun readEvents()
+    interface OnClickEvent {
+        fun onClick(event: Event, position: Int)
     }
 }
 
