@@ -49,7 +49,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                 })
             } else {
-                makeAllertDialog(message = "Login Failed", negativeButton = "Retry")
+                makeAllertDialogNO(message = "Login Failed", negativeButton = "Retry")
             }
         }
     }

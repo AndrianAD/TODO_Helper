@@ -20,12 +20,15 @@ import androidx.lifecycle.Observer
 import com.android.todohelper.UserActivity
 import com.android.todohelper.data.User
 import com.google.android.material.snackbar.Snackbar
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.concurrent.atomic.AtomicBoolean
 
 
-fun Context.makeAllertDialog(message: String, negativeButton: String) =
-    AlertDialog.Builder(this).setMessage("Login Failed")
-        .setNegativeButton("Retry", null)
+fun Context.makeAllertDialogNO(message: String, negativeButton: String) =
+    AlertDialog.Builder(this).setMessage(message)
+        .setNegativeButton(negativeButton, null)
         .create()
         .show()
 
@@ -42,7 +45,7 @@ fun Context.UserActivityIntent(it: User): Intent {
     ).apply {
         putExtra("name", it.name)
         putExtra("lastname", it.lastName)
-        putExtra("id", it.id)
+        putExtra("id", it.id.toString())
     }
 
 }

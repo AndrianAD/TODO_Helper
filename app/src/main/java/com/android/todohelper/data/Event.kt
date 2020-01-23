@@ -8,5 +8,5 @@ data class Event(
     @SerializedName("sort_order")
     var sortOrder: Int,
     @SerializedName("event_id")
-    var event_id: String
+    var eventId: Int
 )

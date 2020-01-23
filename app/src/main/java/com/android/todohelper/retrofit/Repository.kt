@@ -21,6 +21,14 @@ class Repository() {
         )
 
 
+    fun deleteEvent(eventId: Int) {
+        retrofit!!.delete(eventId).enqueue(object : Callback<String?> {
+            override fun onResponse(call: Call<String?>, response: Response<String?>) {}
+            override fun onFailure(call: Call<String?>, t: Throwable) {}
+        })
+    }
+
+
     fun login(email: String, password: String): MutableLiveData<NetworkResponse<Any>> {
         val callback = MutableLiveData<NetworkResponse<Any>>()
         retrofit!!.login(email, password).enqueue(object : Callback<List<User>> {
@@ -52,6 +60,13 @@ class Repository() {
 
         })
         return callback
+    }
+
+    fun changeOrder(id: Int, targetOrder: Int) {
+        retrofit!!.changeOrder(id, targetOrder).enqueue(object : Callback<String?> {
+            override fun onResponse(call: Call<String?>, response: Response<String?>) {}
+            override fun onFailure(call: Call<String?>, t: Throwable) {}
+        })
     }
 }
 
