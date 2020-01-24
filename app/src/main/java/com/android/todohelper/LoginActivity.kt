@@ -6,8 +6,8 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.data.User
+import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.utils.*
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_login.*
@@ -22,7 +22,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        chekPermission()
+        checkPermission()
 
         var viewModel: BaseViewModel = getViewModel()
 
@@ -35,19 +35,24 @@ class LoginActivity : AppCompatActivity() {
             )
         }
 
+
+        viewModel.loginLiveData.observe(this, Observer {
+            when (it) {
+                is NetworkResponse.Success -> {
+                    it.output as List<User>
+                    startActivity(UserActivityIntent(it.output[0]))
+                }
+                is NetworkResponse.Error -> toast(it.message)
+            }
+        })
+
+
         bSignIn.setOnClickListener {
             val email = etEmail.text.toString()
             val password = etPassword.text.toString()
             if (email.isEmpty().not() && password.isEmpty().not()) {
-                viewModel.login(email=email,password = password).observe(this, Observer {
-                    when (it) {
-                        is NetworkResponse.Success -> {
-                            it.output as List<User>
-                            startActivity(UserActivityIntent(it.output[0]))
-                        }
-                        is NetworkResponse.Error -> toast(it.message)
-                    }
-                })
+                viewModel.login(email = email, password = password)
+
             } else {
                 makeAllertDialogNO(message = "Login Failed", negativeButton = "Retry")
             }
@@ -62,16 +67,16 @@ class LoginActivity : AppCompatActivity() {
         if (requestCode == PERMISSION_REQUEST_RECORD_AUDIO) {
 
             if (grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                mainLayout.showSnackbar("camera_permission_granted", Snackbar.LENGTH_SHORT)
+                mainLayout.showSnackbar("permission_granted", Snackbar.LENGTH_SHORT)
                 // ------go to next
             } else {
                 // Permission request was denied.
-                mainLayout.showSnackbar("camera_permission_denied", Snackbar.LENGTH_SHORT)
+                mainLayout.showSnackbar("permission_denied", Snackbar.LENGTH_SHORT)
             }
         }
     }
 
-    private fun chekPermission() {
+    private fun checkPermission() {
 
         if (checkSelfPermissionCompat(Manifest.permission.RECORD_AUDIO) ==
             PackageManager.PERMISSION_GRANTED
@@ -87,7 +92,7 @@ class LoginActivity : AppCompatActivity() {
     private fun requestPermission() {
         if (shouldShowRequestPermissionRationaleCompat(Manifest.permission.RECORD_AUDIO)) {
             mainLayout.showSnackbar(
-                "camera_access_required",
+                "access_required",
                 Snackbar.LENGTH_INDEFINITE, "Ok"
             ) {
                 requestPermissionsCompat(
@@ -96,7 +101,7 @@ class LoginActivity : AppCompatActivity() {
                 )
             }
         } else {
-            mainLayout.showSnackbar("camera_permission_not_available", Snackbar.LENGTH_SHORT)
+            mainLayout.showSnackbar("permission_not_available", Snackbar.LENGTH_SHORT)
             requestPermissionsCompat(
                 arrayOf(Manifest.permission.RECORD_AUDIO),
                 PERMISSION_REQUEST_RECORD_AUDIO

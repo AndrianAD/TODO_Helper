@@ -1,35 +1,39 @@
 package com.android.todohelper
 
-import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
 import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.retrofit.Repository
 import com.android.todohelper.utils.SingleLiveEvent
+
 import org.koin.core.KoinComponent
 import org.koin.core.get
+
 
 class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
     var repository: Repository = get()
     val toastMessage = SingleLiveEvent<String>()
+    val editEventLiveData = SingleLiveEvent<NetworkResponse<Any>>()
+    val getEventsLiveData = SingleLiveEvent<NetworkResponse<Any>>()
+    val loginLiveData = SingleLiveEvent<NetworkResponse<Any>>()
 
 
-    fun login(email: String, password: String): MutableLiveData<NetworkResponse<Any>> {
-        return if (hasNetworkConnection()) {
-            repository.login(email = email, password = password)
+    fun login(email: String, password: String) {
+        if (hasNetworkConnection()) {
+            repository.login(email = email, password = password, callback = loginLiveData)
         } else {
-            MutableLiveData(NetworkResponse.Error("No Internet"))
+            loginLiveData.postValue(NetworkResponse.Error("No Internet"))
         }
     }
 
-
-    fun getEvents(id: Int): MutableLiveData<NetworkResponse<Any>> {
-        return if (hasNetworkConnection()) {
-            repository.getEvents(id)
+    fun getEvents(id: Int) {
+        if (hasNetworkConnection()) {
+            repository.getEvents(id, getEventsLiveData)
         } else {
-            MutableLiveData(NetworkResponse.Error("No Internet"))
+            getEventsLiveData.postValue(NetworkResponse.Error("No Internet"))
         }
     }
 
@@ -37,14 +41,14 @@ class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
         name: String = "",
         description: String = "",
         id: Int = -1
-    ): MutableLiveData<NetworkResponse<Any>> {
-        return if (hasNetworkConnection()) {
+    ) {
+        if (hasNetworkConnection()) {
             repository.editEvent(
                 toName = name,
                 toDescription = description,
-                toId = id
+                toId = id, callback = editEventLiveData
             )
-        } else MutableLiveData(NetworkResponse.Error("No Internet"))
+        } else editEventLiveData.postValue(NetworkResponse.Error("No Internet"))
     }
 
 
@@ -53,12 +57,27 @@ class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
     }
 
     private fun hasNetworkConnection(): Boolean {
-        val connectivityManager =
-            getApplication<Application>().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connectivityManager.activeNetworkInfo
-        return networkInfo != null && networkInfo.isConnected
-    }
+        val cm =
+            App.instance.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
+        if (cm != null) {
+            if (Build.VERSION.SDK_INT < 23) {
+                val ni = cm.activeNetworkInfo
+                if (ni != null) {
+                    return ni.isConnected && (ni.type == ConnectivityManager.TYPE_WIFI || ni.type == ConnectivityManager.TYPE_MOBILE)
+                }
+            } else {
+                val n = cm.activeNetwork
+                if (n != null) {
+                    val nc = cm.getNetworkCapabilities(n)
+                    return nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || nc.hasTransport(
+                        NetworkCapabilities.TRANSPORT_WIFI
+                    )
+                }
+            }
+        }
+        return false
+    }
 }
 
 

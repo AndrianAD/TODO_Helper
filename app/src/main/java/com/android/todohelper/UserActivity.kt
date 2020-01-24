@@ -20,17 +20,19 @@ import com.android.todohelper.utils.isEmpty
 import com.android.todohelper.utils.preventMultiClick
 import com.android.todohelper.utils.toast
 import kotlinx.android.synthetic.main.activity_user.*
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.getViewModel
 
 class UserActivity : AppCompatActivity(), RecyclerAdapter.OnClickEvent {
 
     private lateinit var adapter: RecyclerAdapter
     var layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
-    private val viewModel: BaseViewModel by viewModel()
+    lateinit var viewModel: BaseViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user)
+
+        viewModel = getViewModel()
 
 
         val intent = intent
@@ -52,7 +54,7 @@ class UserActivity : AppCompatActivity(), RecyclerAdapter.OnClickEvent {
 
 
 
-        viewModel.getEvents(userId).observe(this, Observer {
+        viewModel.getEventsLiveData.observe(this, Observer {
             when (it) {
                 is NetworkResponse.Success -> {
                     it.output as ArrayList<Event>
@@ -64,7 +66,7 @@ class UserActivity : AppCompatActivity(), RecyclerAdapter.OnClickEvent {
             }
         })
 
-        viewModel.editEvent().observe(this, Observer {
+        viewModel.editEventLiveData.observe(this, Observer {
             when (it) {
                 is NetworkResponse.Success -> {
                     progressBar.visibility = View.VISIBLE
@@ -108,13 +110,13 @@ class UserActivity : AppCompatActivity(), RecyclerAdapter.OnClickEvent {
                 toast("Заполните название")
                 return@setOnClickListener
             }
-            dialogProgress.visibility = View.VISIBLE
-            dialog.dismiss()
+            //dialogProgress.visibility = View.VISIBLE
             viewModel.editEvent(
                 name = dialogEtName.text.toString(),
                 description = dialogDescription.text.toString(),
                 id = event.eventId
             )
+            dialog.dismiss()
         }
 
     }
