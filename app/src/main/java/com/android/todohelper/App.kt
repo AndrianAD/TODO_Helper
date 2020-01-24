@@ -1,7 +1,9 @@
 package com.android.todohelper
 
 import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
+import com.android.todohelper.utils.SHARED_PREF
 import com.android.todohelper.utils.firstModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -11,7 +13,7 @@ class App : Application() {
 
     companion object {
         lateinit var instance: App
-        private var sharedPreferences: SharedPreferences? = null
+         private var sharedPreferences: SharedPreferences? = null
 
     }
 
@@ -25,6 +27,13 @@ class App : Application() {
         }
 
 
+    }
+
+    fun getMySharedPreferences(): SharedPreferences? {
+        return if (sharedPreferences == null) {
+            getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE)
+        } else
+            sharedPreferences
     }
 
 }

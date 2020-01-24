@@ -10,6 +10,7 @@ import android.text.Editable
 import android.util.Log
 import android.util.Patterns
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.MainThread
@@ -18,13 +19,16 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.RecyclerView
 import com.android.todohelper.UserActivity
 import com.android.todohelper.data.User
 import com.google.android.material.snackbar.Snackbar
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 var mLastClickTime: Long = 0
+
+
 fun Context.makeAllertDialogNO(message: String, negativeButton: String) =
     AlertDialog.Builder(this).setMessage(message)
         .setNegativeButton(negativeButton, null)
@@ -36,7 +40,7 @@ fun Context.toast(message: CharSequence) =
     Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
 
-fun Context.UserActivityIntent(it: User): Intent {
+fun Context.userActivityIntent(it: User): Intent {
     return Intent(this, UserActivity::class.java).addFlags(
         Intent.FLAG_ACTIVITY_CLEAR_TASK
     ).addFlags(
@@ -49,8 +53,8 @@ fun Context.UserActivityIntent(it: User): Intent {
 
 }
 
-fun EditText.isEmpty(): Boolean{
-     return this.text.toString().trim().isEmpty()
+fun EditText.isEmpty(): Boolean {
+    return this.text.toString().trim().isEmpty()
 }
 
 
@@ -204,6 +208,23 @@ fun preventMultiClick(): Boolean {
     }
     mLastClickTime = SystemClock.elapsedRealtime()
     return false
+}
+
+//fun EditText.showKeyboard() {
+//    this.post {
+//        val inputMethodManager: InputMethodManager =
+//            this.context.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
+//        inputMethodManager.toggleSoftInputFromWindow(
+//            this.applicationWindowToken, InputMethodManager.SHOW_IMPLICIT, 0
+//        )
+//        this.requestFocus()
+//
+//    }
+//}
+
+fun getCurrentTime(): String {
+    return SimpleDateFormat("dd-MM-yyyy HH:mm:ss")
+        .format(Calendar.getInstance().time)
 }
 
 

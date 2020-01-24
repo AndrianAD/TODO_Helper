@@ -9,7 +9,6 @@ val firstModule = module {
 
     // ViewModel
     viewModel<BaseViewModel>()
-
     single { Repository() }
 
 

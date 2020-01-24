@@ -33,7 +33,7 @@ class RecyclerAdapter(var context: Context, var onClickEvent:OnClickEvent) :
         viewHolder.name?.text = event.name
         viewHolder.description?.text = event.description
         viewHolder.time?.text = event.time
-        viewHolder.cardView!!.setOnClickListener { onClickEvent.onClick(event,position) }
+        viewHolder.cardView!!.setOnClickListener { onClickEvent.onRecyclerClick(event,position) }
 
     }
 
@@ -99,7 +99,7 @@ class RecyclerAdapter(var context: Context, var onClickEvent:OnClickEvent) :
     }
 
     interface OnClickEvent {
-        fun onClick(event: Event, position: Int)
+        fun onRecyclerClick(event: Event, position: Int)
     }
 }
 

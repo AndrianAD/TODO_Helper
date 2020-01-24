@@ -19,6 +19,7 @@ class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
     val editEventLiveData = SingleLiveEvent<NetworkResponse<Any>>()
     val getEventsLiveData = SingleLiveEvent<NetworkResponse<Any>>()
     val loginLiveData = SingleLiveEvent<NetworkResponse<Any>>()
+    val createEventLiveData = SingleLiveEvent<NetworkResponse<Any>>()
 
 
     fun login(email: String, password: String) {
@@ -54,6 +55,18 @@ class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
 
     fun showToast(message: String) {
         toastMessage.value = message
+    }
+
+    fun createEvent(name: String, description: String="", time: String="", sortOrder: Int, id: Int) {
+        if (hasNetworkConnection()) {
+            repository.createEvent(
+                name = name,
+                description = description,
+                time = time,
+                sortOrder = sortOrder, id = id,
+                callback = createEventLiveData
+            )
+        } else editEventLiveData.postValue(NetworkResponse.Error("No Internet"))
     }
 
     private fun hasNetworkConnection(): Boolean {

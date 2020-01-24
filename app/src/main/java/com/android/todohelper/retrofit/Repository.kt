@@ -16,9 +16,9 @@ class Repository() {
     private var retrofit = RetrofitFactory.retrofitInstance
     val sharedPreferences: SharedPreferences =
         App.instance.getSharedPreferences(
-            SHARED_PREF,
-            Context.MODE_PRIVATE
-        )
+                SHARED_PREF,
+                Context.MODE_PRIVATE
+                                         )
 
 
     fun deleteEvent(eventId: Int) {
@@ -41,6 +41,7 @@ class Repository() {
             override fun onFailure(call: Call<List<User>>, t: Throwable) {
                 callback.value = t.message?.let { NetworkResponse.Error(it) }
             }
+
             override fun onResponse(call: Call<List<User>>, response: Response<List<User>>) {
                 callback.value = response.body()?.let { NetworkResponse.Success(it) }
             }
@@ -51,7 +52,7 @@ class Repository() {
     fun getEvents(
         id: Int,
         callback: SingleLiveEvent<NetworkResponse<Any>>
-    ) {
+                 ) {
         retrofit!!.read(id).enqueue(object : Callback<ArrayList<Event>> {
             override fun onFailure(call: Call<ArrayList<Event>>, t: Throwable) {
                 callback.value = t.message?.let { NetworkResponse.Error(it) }
@@ -60,7 +61,7 @@ class Repository() {
             override fun onResponse(
                 call: Call<ArrayList<Event>>,
                 response: Response<ArrayList<Event>>
-            ) {
+                                   ) {
                 callback.value = response.body()?.let { NetworkResponse.Success(it) }
             }
 
@@ -78,7 +79,7 @@ class Repository() {
         toName: String,
         toDescription: String,
         toId: Int, callback: SingleLiveEvent<NetworkResponse<Any>>
-    ) {
+                 ) {
         retrofit!!.editEvent(toName, toDescription, toId).enqueue(object : Callback<String?> {
             override fun onResponse(call: Call<String?>, response: Response<String?>) {
                 callback.postValue(response.body()?.let { NetworkResponse.Success(it) })
@@ -88,6 +89,26 @@ class Repository() {
                 callback.postValue(t.message?.let { NetworkResponse.Error(it) })
             }
         })
+    }
+
+    fun createEvent(
+        name: String,
+        description: String,
+        time: String,
+        sortOrder: Int,
+        id: Int,
+        callback: SingleLiveEvent<NetworkResponse<Any>>
+                   ) {
+        retrofit!!.createEvent(name, description, time, sortOrder, id)
+            .enqueue(object : Callback<String?> {
+                override fun onResponse(call: Call<String?>, response: Response<String?>) {
+                    callback.postValue(response.body()?.let { NetworkResponse.Success(it) })
+                }
+
+                override fun onFailure(call: Call<String?>, t: Throwable) {
+                    callback.postValue(t.message?.let { NetworkResponse.Error(it) })
+                }
+            })
     }
 }
 
