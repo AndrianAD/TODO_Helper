@@ -111,7 +111,7 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
                 return@setOnClickListener
             }
             if (dialogEtName.isEmpty()) {
-                toast("Заполните название")
+                toast("Заполните название:")
                 return@setOnClickListener
             }
 

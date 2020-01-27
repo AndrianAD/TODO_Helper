@@ -223,7 +223,7 @@ fun preventMultiClick(): Boolean {
 //}
 
 fun getCurrentTime(): String {
-    return SimpleDateFormat("dd-MM-yyyy HH:mm:ss")
+    return SimpleDateFormat("dd-MM-yy HH:mm")
         .format(Calendar.getInstance().time)
 }
 

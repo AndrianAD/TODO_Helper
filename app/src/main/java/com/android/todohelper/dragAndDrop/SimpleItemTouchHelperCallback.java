@@ -1,5 +1,6 @@
 package com.android.todohelper.dragAndDrop;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     private ItemTouchHelperAdapter adapter;
+    private boolean swipeBack = true;
 
     public SimpleItemTouchHelperCallback(ItemTouchHelperAdapter adapter) {
         this.adapter = adapter;
@@ -38,7 +40,17 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-        adapter.onItemDismiss(viewHolder.getAdapterPosition());
-    }
+        if (direction == ItemTouchHelper.START) {
+            swipeBack = true;
+            adapter.onSwipeLeft(viewHolder.getAdapterPosition());
+        }
+        if (direction == ItemTouchHelper.END) {
+            swipeBack = true;
+            adapter.onSwipeRight(viewHolder.getAdapterPosition());
+        }
 
+    }
 }
+
+
+
