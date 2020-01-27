@@ -20,24 +20,18 @@ class LoginActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
         if (sharedPreferences!!.contains(SHARED_CURRENT_USER)) {
             var json = sharedPreferences!!.get(SHARED_CURRENT_USER, "")
             startActivity(userActivityIntent(Gson().fromJson(json, User::class.java)))
+            overridePendingTransition(0,0)
+            finish()
         }
         setContentView(R.layout.activity_login)
-
-
         checkPermission()
         var viewModel: BaseViewModel = getViewModel()
 
         tvRegisterLink.setOnClickListener {
-            startActivity(
-                    Intent(
-                            this,
-                            RegisterActivity::class.java
-                          )
-                         )
+            startActivity(Intent(this, RegisterActivity::class.java))
         }
 
         viewModel.loginLiveData.observe(this, Observer {

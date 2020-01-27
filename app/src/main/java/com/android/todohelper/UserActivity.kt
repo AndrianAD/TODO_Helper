@@ -31,11 +31,9 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user)
+        progressBar.visibility=View.VISIBLE
 
         viewModel = getViewModel()
-        dialog = createDialog()
-
-
         val intent = intent
         val name = intent.getStringExtra("name")
         val lastname = intent.getStringExtra("lastname")
@@ -53,7 +51,7 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
         recyclerView.layoutManager = layoutManager
 
         viewModel.getEvents(userId)
-
+        dialog = createDialog()
 
 
         addEvent.setOnClickListener {
