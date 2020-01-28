@@ -2,7 +2,6 @@ package com.android.todohelper.retrofit
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.android.tegritee.retrofit.RetrofitFactory
 import com.android.todohelper.App
 import com.android.todohelper.data.Event
 import com.android.todohelper.data.User
@@ -20,16 +19,8 @@ class Repository() {
                 Context.MODE_PRIVATE
                                          )
 
-
     fun deleteEvent(eventId: Int) {
         retrofit!!.delete(eventId).enqueue(object : Callback<String?> {
-            override fun onResponse(call: Call<String?>, response: Response<String?>) {}
-            override fun onFailure(call: Call<String?>, t: Throwable) {}
-        })
-    }
-
-    fun deleteEvent(name: String, description: String, id: Int) {
-        retrofit!!.editEvent(name, description, id).enqueue(object : Callback<String?> {
             override fun onResponse(call: Call<String?>, response: Response<String?>) {}
             override fun onFailure(call: Call<String?>, t: Throwable) {}
         })
@@ -49,24 +40,25 @@ class Repository() {
     }
 
 
-    fun getEvents(
-        id: Int,
-        callback: SingleLiveEvent<NetworkResponse<Any>>
-                 ) {
-        retrofit!!.read(id).enqueue(object : Callback<ArrayList<Event>> {
-            override fun onFailure(call: Call<ArrayList<Event>>, t: Throwable) {
-                callback.value = t.message?.let { NetworkResponse.Error(it) }
-            }
+    suspend fun getEvents(id: Int) = retrofit!!.read(id)
 
-            override fun onResponse(
-                call: Call<ArrayList<Event>>,
-                response: Response<ArrayList<Event>>
-                                   ) {
-                callback.value = response.body()?.let { NetworkResponse.Success(it) }
-            }
 
-        })
-    }
+//    fun getEvents(
+//        id: Int,
+//        callback: SingleLiveEvent<NetworkResponse<Any>>
+//                 ) {
+//        retrofit!!.read(id).enqueue(object : Callback<ArrayList<Event>> {
+//            override fun onFailure(call: Call<ArrayList<Event>>, t: Throwable) {
+//                callback.value = t.message?.let { NetworkResponse.Error(it) }
+//            }
+//
+//            override fun onResponse(
+//                call: Call<ArrayList<Event>>,
+//                response: Response<ArrayList<Event>>
+//                                   ) {
+//                callback.value = response.body()?.let { NetworkResponse.Success(it) }
+//            }
+
 
     fun changeOrder(id: Int, targetOrder: Int) {
         retrofit!!.changeOrder(id, targetOrder).enqueue(object : Callback<String?> {

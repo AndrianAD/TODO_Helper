@@ -31,7 +31,7 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user)
-        progressBar.visibility=View.VISIBLE
+        progressBar.visibility = View.VISIBLE
 
         viewModel = getViewModel()
         val intent = intent
@@ -98,13 +98,16 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
     }
 
     private fun createEvent() {
-        var dialogButtonOK =
+        val dialogButtonOK =
             dialog.findViewById<Button>(R.id.save_form_bt_OK)
-        var dialogEtName = dialog.findViewById<EditText>(R.id.save_form_et_name)
-        var dialogDescription = dialog.findViewById<EditText>(R.id.save_form_et_description)
+        val dialogEtName = dialog.findViewById<EditText>(R.id.save_form_et_name)
+        val dialogDescription = dialog.findViewById<EditText>(R.id.save_form_et_description)
         var dialogProgress = dialog.findViewById<ProgressBar>(R.id.dialogProgress)
         dialog.show()
         dialogEtName.text.clear()
+
+        showKeyboard(dialogEtName, null)
+
 
         dialogButtonOK.setOnClickListener {
             if (preventMultiClick()) {
@@ -114,35 +117,26 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
                 toast("Заполните название:")
                 return@setOnClickListener
             }
-
-            var time = getCurrentTime()
             viewModel.createEvent(
                     name = dialogEtName.text.toString(),
                     description = dialogDescription.text.toString(),
-                    id = userId, time = time, sortOrder = sortingOrder.toInt())
+                    id = userId, time =  getCurrentTime(), sortOrder = sortingOrder.toInt())
         }
 
     }
 
+
     override fun onRecyclerClick(event: Event, position: Int) {
-        var dialogButtonOK =
+        val dialogButtonOK =
             dialog.findViewById<Button>(R.id.save_form_bt_OK)
-        var dialogEtName = dialog.findViewById<EditText>(R.id.save_form_et_name)
-        var dialogDescription = dialog.findViewById<EditText>(R.id.save_form_et_description)
+        val dialogEtName = dialog.findViewById<EditText>(R.id.save_form_et_name)
+        val dialogDescription = dialog.findViewById<EditText>(R.id.save_form_et_description)
         var dialogProgress = dialog.findViewById<ProgressBar>(R.id.dialogProgress)
         dialog.show()
 
         dialogEtName.setText(event.name)
         dialogDescription.setText(event.description)
-
-        dialogEtName.post {
-            val inputMethodManager: InputMethodManager =
-                getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            inputMethodManager.toggleSoftInputFromWindow(
-                    dialogEtName.applicationWindowToken, InputMethodManager.SHOW_IMPLICIT, 0
-                                                        )
-            dialogEtName.requestFocus()
-        }
+        showKeyboard(dialogEtName, true)
 
         dialogButtonOK.setOnClickListener {
             if (preventMultiClick()) {
@@ -172,6 +166,21 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
                 ViewGroup.LayoutParams.WRAP_CONTENT
                                  )
         return dialog
+    }
+
+    private fun showKeyboard(dialogEtName: EditText, setSelection: Boolean?) {
+        dialogEtName.post {
+            val inputMethodManager: InputMethodManager =
+                getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.toggleSoftInputFromWindow(
+                    dialogEtName.applicationWindowToken, InputMethodManager.SHOW_IMPLICIT, 0
+                                                        )
+            dialogEtName.requestFocus()
+            if (setSelection != null) {
+                dialogEtName.setSelection(dialogEtName.text.length)
+            }
+
+        }
     }
 
 

@@ -1,6 +1,5 @@
-package com.android.tegritee.retrofit
+package com.android.todohelper.retrofit
 
-import com.android.todohelper.retrofit.NetworkAPI
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -10,9 +9,9 @@ import java.util.concurrent.TimeUnit
 private const val BASE_URL = "http://uncroptv.000webhostapp.com/"
 
 object RetrofitFactory {
-    private var retrofit: NetworkAPI? = null
+    private var retrofit: API? = null
 
-    val retrofitInstance: NetworkAPI?
+    val retrofitInstance: API?
         get() {
             if (retrofit == null) {
                 retrofit = Retrofit.Builder()
@@ -20,7 +19,7 @@ object RetrofitFactory {
                     .client(getClient())
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
-                    .create(NetworkAPI::class.java)
+                    .create(API::class.java)
             }
             return retrofit
         }

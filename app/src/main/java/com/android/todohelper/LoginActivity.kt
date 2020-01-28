@@ -34,29 +34,29 @@ class LoginActivity : BaseActivity() {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
-        viewModel.loginLiveData.observe(this, Observer {
-            when (it) {
-                is NetworkResponse.Success -> {
-                    it.output as List<User>
-                    sharedPreferences!!.put(SHARED_CURRENT_USER, Gson().toJson(it.output[0]))
-                    startActivity(userActivityIntent(it.output[0]))
-                }
-                is NetworkResponse.Error -> toast(it.message)
-            }
-        })
+//        viewModel.loginLiveData.observe(this, Observer {
+//            when (it) {
+//                is NetworkResponse.Success -> {
+//                    it.output as List<User>
+//                    sharedPreferences!!.put(SHARED_CURRENT_USER, Gson().toJson(it.output[0]))
+//                    startActivity(userActivityIntent(it.output[0]))
+//                }
+//                is NetworkResponse.Error -> toast(it.message)
+//            }
+//        })
 
 
-        bSignIn.setOnClickListener {
-            val email = etEmail.text.toString()
-            val password = etPassword.text.toString()
-            if (email.isEmpty().not() && password.isEmpty().not()) {
-                viewModel.login(email = email, password = password)
-
-            }
-            else {
-                makeAllertDialogNO(message = "Login Failed", negativeButton = "Retry")
-            }
-        }
+//        bSignIn.setOnClickListener {
+//            val email = etEmail.text.toString()
+//            val password = etPassword.text.toString()
+//            if (email.isEmpty().not() && password.isEmpty().not()) {
+//                viewModel.login(email = email, password = password)
+//
+//            }
+//            else {
+//                makeAllertDialogNO(message = "Login Failed", negativeButton = "Retry")
+//            }
+//        }
     }
 
     override fun onRequestPermissionsResult(

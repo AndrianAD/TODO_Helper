@@ -113,7 +113,7 @@ class RecyclerAdapter(var context: Context, var onClickEvent: OnClickEvent) :
             .minutesStep(1)
             .title("Simple")
             .listener { date ->
-                context.toast( date.toString())
+                context.toast(date.toString())
                 val alarm =
                     context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
                 val startTime = Calendar.getInstance()
