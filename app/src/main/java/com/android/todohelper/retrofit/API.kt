@@ -59,4 +59,24 @@ interface API {
         @Field("event_id") event_id: Int,
         @Field("order") order: Int): Call<String>
 
+
+    @POST("add_event_to_user.php")
+    @FormUrlEncoded
+    fun addEventToUser(
+        @Field("email") email: String,
+        @Field("event_id") eventId: Int): Call<String>
+
+
+    @POST("push_notification.php")
+    @FormUrlEncoded
+    fun notify(
+        @Field("email") email: String,
+        @Field("message") message: String): Call<String>
+
+
 }
+
+
+
+
+

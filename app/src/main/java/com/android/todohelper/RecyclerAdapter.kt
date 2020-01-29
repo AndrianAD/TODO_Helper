@@ -1,10 +1,7 @@
 package com.android.todohelper
 
-import android.app.AlarmManager
 import android.app.AlertDialog
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,8 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.todohelper.data.Event
 import com.android.todohelper.dragAndDrop.ItemTouchHelperAdapter
 import com.android.todohelper.retrofit.Repository
-import com.android.todohelper.utils.toast
-import com.github.florent37.singledateandtimepicker.dialog.SingleDateAndTimePickerDialog
 import org.koin.core.KoinComponent
 import org.koin.core.get
 import java.util.*
@@ -38,6 +33,7 @@ class RecyclerAdapter(var context: Context, var onClickEvent: OnClickEvent) :
         viewHolder.name?.text = event.name
         viewHolder.description?.text = event.description
         viewHolder.time?.text = event.time
+
         viewHolder.cardView!!.setOnClickListener { onClickEvent.onRecyclerClick(event, position) }
 
     }
@@ -104,38 +100,16 @@ class RecyclerAdapter(var context: Context, var onClickEvent: OnClickEvent) :
         return true
     }
 
-    override fun onSwipeLeft(position: Int) {
-
-        val event: Event = eventsList[position]
-        SingleDateAndTimePickerDialog.Builder(context)
-            .curved()
-            .displayListener { notifyDataSetChanged() }
-            .minutesStep(1)
-            .title("Simple")
-            .listener { date ->
-                context.toast(date.toString())
-                val alarm =
-                    context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                val startTime = Calendar.getInstance()
-                startTime[Calendar.HOUR_OF_DAY] = date.hours
-                startTime[Calendar.MINUTE] = date.minutes
-                startTime[Calendar.DATE] = date.date
-                val intent = Intent(context, AlarmReceiver::class.java)
-                intent.putExtra("notificationId", Random().nextInt(100).toString())
-                intent.putExtra("title", event.name)
-                intent.putExtra("description", event.description)
-                val alarmIntent = PendingIntent.getBroadcast(
-                        context, Random().nextInt(1000),
-                        intent, PendingIntent.FLAG_UPDATE_CURRENT)
-                val alarmStartTime = startTime.timeInMillis
-                alarm[AlarmManager.RTC_WAKEUP, alarmStartTime] = alarmIntent
-            }.display()
-
+    override fun onSwipeLeft(
+        position: Int,
+        viewHolder: RecyclerView.ViewHolder) {
+        onClickEvent.onRecyclerLeftSwipe(eventsList[position], position,viewHolder)
     }
 
 
     interface OnClickEvent {
         fun onRecyclerClick(event: Event, position: Int)
+        fun onRecyclerLeftSwipe(event: Event, position: Int,viewHolder: RecyclerView.ViewHolder)
     }
 }
 

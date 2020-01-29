@@ -85,7 +85,7 @@ public class FirebaseMessaging extends FirebaseMessagingService {
                         getBaseContext().getResources(),
                         R.drawable.ok_emoji
                 ))
-                .setContentTitle("Firebase")
+                .setContentTitle("Hi!")
                 .setContentText(remoteMessage.getData().get("message"))
                 .setPriority(2)
                 .setAutoCancel(true)

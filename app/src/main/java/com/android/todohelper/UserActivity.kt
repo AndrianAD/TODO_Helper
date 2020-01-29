@@ -1,15 +1,21 @@
 package com.android.todohelper
 
+import android.app.AlarmManager
 import android.app.Dialog
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
+import android.widget.PopupMenu
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,6 +24,7 @@ import com.android.todohelper.data.Event
 import com.android.todohelper.dragAndDrop.SimpleItemTouchHelperCallback
 import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.utils.*
+import com.github.florent37.singledateandtimepicker.dialog.SingleDateAndTimePickerDialog
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.iid.FirebaseInstanceId
 import kotlinx.android.synthetic.main.activity_user.*
@@ -30,6 +37,8 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 import java.io.IOException
+import java.util.*
+import kotlin.collections.ArrayList
 
 class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
 
@@ -44,11 +53,7 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user)
         progressBar.visibility = View.VISIBLE
-
-
-
-
-
+        userId = intent.getStringExtra("id").toInt()
 
 
         FirebaseInstanceId.getInstance().instanceId
@@ -62,12 +67,13 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
 
                 // Log and toast
                 Log.d("Firebase", token.toString())
-               // Toast.makeText(baseContext, token.toString(), Toast.LENGTH_SHORT).show()
+                // Toast.makeText(baseContext, token.toString(), Toast.LENGTH_SHORT).show()
 
                 //send token
                 val client = OkHttpClient()
                 val body: RequestBody = FormBody.Builder()
                     .add("Token", token)
+                    .add("user_id", userId.toString())
                     .build()
 
                 val request = Request.Builder()
@@ -87,12 +93,11 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
 
 
 
-
         viewModel = getViewModel()
         val intent = intent
         val name = intent.getStringExtra("name")
         val lastname = intent.getStringExtra("lastname")
-        userId = intent.getStringExtra("id").toInt()
+
 
         tvWelcomeMsg.text = "$name  $lastname"
         sortingOrder = sharedPreferences!!.get(SORTING_ORDER, "0")
@@ -106,7 +111,7 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
         recyclerView.layoutManager = layoutManager
 
         viewModel.getEvents(userId)
-        dialog = createDialog()
+        dialog = createDialog(R.layout.save_form)
 
 
         addEvent.setOnClickListener {
@@ -127,6 +132,16 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
             }
         })
 
+
+        viewModel.addEventToUserLiveData.observe(this, Observer {
+            when (it) {
+                is NetworkResponse.Success -> {
+                    it.output as String
+                    toast(it.output)
+                }
+                is NetworkResponse.Error -> toast(it.message)
+            }
+        })
 
         viewModel.getEventsLiveData.observe(this, Observer {
             when (it) {
@@ -150,7 +165,10 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
             }
         })
 
+
+        //onCreate.........................................
     }
+
 
     private fun createEvent() {
         val dialogButtonOK =
@@ -162,7 +180,6 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
         dialogEtName.text.clear()
 
         showKeyboard(dialogEtName, null)
-
 
         dialogButtonOK.setOnClickListener {
             if (preventMultiClick()) {
@@ -177,7 +194,6 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
                     description = dialogDescription.text.toString(),
                     id = userId, time = getCurrentTime(), sortOrder = sortingOrder.toInt())
         }
-
     }
 
 
@@ -209,12 +225,77 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
                                )
             dialog.dismiss()
         }
+    }
+
+    override fun onRecyclerLeftSwipe(
+        event: Event,
+        position: Int,
+        viewHolder: RecyclerView.ViewHolder) {
+
+        adapter.notifyDataSetChanged()
+
+        var popup = PopupMenu(this, viewHolder.itemView, Gravity.RIGHT)
+        popup.inflate(R.menu.context_menu)
+
+        popup.setOnMenuItemClickListener(PopupMenu.OnMenuItemClickListener { item: MenuItem? ->
+
+            when (item!!.itemId) {
+                R.id.newLink -> {
+                    val dialog = createDialog(R.layout.dialog_edittext_form)
+                    val btnOk = dialog.findViewById<Button>(R.id.OkBnt)
+                    val emailET = dialog.findViewById<EditText>(R.id.emailEt)
+                    dialog.show()
+
+                    btnOk.setOnClickListener {
+                        if (emailET.isEmpty()) {
+                            return@setOnClickListener
+                        }
+                        else {
+                            viewModel.addEventToUser(emailET.text.toString(), event.eventId)
+                            viewModel.notifyUser(email = emailET.text.toString(),message = event.description)
+                            dialog.dismiss()
+                        }
+                    }
+                }
+                R.id.notification -> {
+                    startTimePicker(event)
+                }
+            }
+            true
+        })
+        popup.show()
 
     }
 
-    private fun createDialog(): Dialog {
+    private fun startTimePicker(event: Event) {
+        SingleDateAndTimePickerDialog.Builder(this)
+            .curved()
+            .displayListener { adapter.notifyDataSetChanged() }
+            .minutesStep(1)
+            .title("Simple")
+            .listener { date ->
+                this.toast(date.toString())
+                val alarm =
+                    this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                val startTime = Calendar.getInstance()
+                startTime[Calendar.HOUR_OF_DAY] = date.hours
+                startTime[Calendar.MINUTE] = date.minutes
+                startTime[Calendar.DATE] = date.date
+                val intent = Intent(this, AlarmReceiver::class.java)
+                intent.putExtra("notificationId", Random().nextInt(100).toString())
+                intent.putExtra("title", event.name)
+                intent.putExtra("description", event.description)
+                val alarmIntent = PendingIntent.getBroadcast(
+                        this, Random().nextInt(1000),
+                        intent, PendingIntent.FLAG_UPDATE_CURRENT)
+                val alarmStartTime = startTime.timeInMillis
+                alarm[AlarmManager.RTC_WAKEUP, alarmStartTime] = alarmIntent
+            }.display()
+    }
+
+    private fun createDialog(layout: Int): Dialog {
         var dialog = Dialog(this)
-        dialog.setContentView(R.layout.save_form)
+        dialog.setContentView(layout)
         dialog.setTitle("Введите название:")
         dialog.window!!.setLayout(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -234,7 +315,6 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
             if (setSelection != null) {
                 dialogEtName.setSelection(dialogEtName.text.length)
             }
-
         }
     }
 

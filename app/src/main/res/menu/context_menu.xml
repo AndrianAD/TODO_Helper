@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/notification"
+        android:title="Напоминание" />
+    <item
+        android:id="@+id/newLink"
+        android:title="Добавить пользователя" />
+</menu>

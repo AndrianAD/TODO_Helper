@@ -3,7 +3,6 @@ package com.android.todohelper.retrofit
 import android.content.Context
 import android.content.SharedPreferences
 import com.android.todohelper.App
-import com.android.todohelper.data.Event
 import com.android.todohelper.data.User
 import com.android.todohelper.utils.SHARED_PREF
 import com.android.todohelper.utils.SingleLiveEvent
@@ -92,6 +91,35 @@ class Repository() {
         callback: SingleLiveEvent<NetworkResponse<Any>>
                    ) {
         retrofit!!.createEvent(name, description, time, sortOrder, id)
+            .enqueue(object : Callback<String?> {
+                override fun onResponse(call: Call<String?>, response: Response<String?>) {
+                    callback.postValue(response.body()?.let { NetworkResponse.Success(it) })
+                }
+
+                override fun onFailure(call: Call<String?>, t: Throwable) {
+                    callback.postValue(t.message?.let { NetworkResponse.Error(it) })
+                }
+            })
+    }
+
+    fun addEventToUser(
+        email: String,
+        eventId: Int,
+        callback: SingleLiveEvent<NetworkResponse<Any>>) {
+        retrofit!!.addEventToUser(email, eventId)
+            .enqueue(object : Callback<String?> {
+                override fun onResponse(call: Call<String?>, response: Response<String?>) {
+                    callback.postValue(response.body()?.let { NetworkResponse.Success(it) })
+                }
+
+                override fun onFailure(call: Call<String?>, t: Throwable) {
+                    callback.postValue(t.message?.let { NetworkResponse.Error(it) })
+                }
+            })
+    }
+
+    fun notify(email: String, message: String, callback: SingleLiveEvent<NetworkResponse<Any>>) {
+        retrofit!!.notify(email, message)
             .enqueue(object : Callback<String?> {
                 override fun onResponse(call: Call<String?>, response: Response<String?>) {
                     callback.postValue(response.body()?.let { NetworkResponse.Success(it) })

@@ -21,6 +21,8 @@ class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
     val getEventsLiveData = SingleLiveEvent<NetworkResponse<Any>>()
     val loginLiveData = SingleLiveEvent<NetworkResponse<Any>>()
     val createEventLiveData = SingleLiveEvent<NetworkResponse<Any>>()
+    val addEventToUserLiveData = SingleLiveEvent<NetworkResponse<Any>>()
+    val notifyUserLiveData = SingleLiveEvent<NetworkResponse<Any>>()
 
 
     fun login(email: String, password: String) {
@@ -32,20 +34,20 @@ class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
         }
     }
 
-//    fun getEvents(id: Int) {
-//        if (hasNetworkConnection()) {
-//            repository.getEvents(id, getEventsLiveData)
-//        } else {
-//            getEventsLiveData.postValue(NetworkResponse.Error("No Internet"))
-//        }
-//    }
+    fun addEventToUser(email: String, eventId: Int) {
+        if (hasNetworkConnection()) {
+            repository.addEventToUser(email, eventId, addEventToUserLiveData)
+        }
+        else {
+            loginLiveData.postValue(NetworkResponse.Error("No Internet"))
+        }
+    }
 
+    // Retrofit coroutine
     fun getEvents(id: Int) {
         viewModelScope.launch {
             if (hasNetworkConnection()) {
-
-                    getEventsLiveData.postValue(NetworkResponse.Success(repository.getEvents(id)))
-
+                getEventsLiveData.postValue(NetworkResponse.Success(repository.getEvents(id)))
             }
             else {
                 getEventsLiveData.postValue(NetworkResponse.Error("No Internet"))
@@ -115,6 +117,14 @@ class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
             }
         }
         return false
+    }
+
+    fun notifyUser(email: String, message: String) {
+        if (hasNetworkConnection()) {
+            repository.notify(
+                    email, message,notifyUserLiveData)
+        }
+        else editEventLiveData.postValue(NetworkResponse.Error("No Internet"))
     }
 }
 

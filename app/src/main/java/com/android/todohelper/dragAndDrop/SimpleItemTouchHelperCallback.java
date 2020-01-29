@@ -42,7 +42,7 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
         if (direction == ItemTouchHelper.START) {
             swipeBack = true;
-            adapter.onSwipeLeft(viewHolder.getAdapterPosition());
+            adapter.onSwipeLeft(viewHolder.getAdapterPosition(), viewHolder);
         }
         if (direction == ItemTouchHelper.END) {
             swipeBack = true;
