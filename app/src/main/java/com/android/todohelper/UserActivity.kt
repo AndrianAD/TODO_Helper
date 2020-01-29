@@ -2,12 +2,14 @@ package com.android.todohelper
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,8 +18,18 @@ import com.android.todohelper.data.Event
 import com.android.todohelper.dragAndDrop.SimpleItemTouchHelperCallback
 import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.utils.*
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.iid.FirebaseInstanceId
 import kotlinx.android.synthetic.main.activity_user.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
 import org.koin.androidx.viewmodel.ext.android.getViewModel
+import java.io.IOException
 
 class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
 
@@ -32,6 +44,49 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user)
         progressBar.visibility = View.VISIBLE
+
+
+
+
+
+
+
+        FirebaseInstanceId.getInstance().instanceId
+            .addOnCompleteListener(OnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w("Firebase", "getInstanceId failed", task.exception)
+                    return@OnCompleteListener
+                }
+                // Get new Instance ID token
+                val token = task.result?.token
+
+                // Log and toast
+                Log.d("Firebase", token.toString())
+               // Toast.makeText(baseContext, token.toString(), Toast.LENGTH_SHORT).show()
+
+                //send token
+                val client = OkHttpClient()
+                val body: RequestBody = FormBody.Builder()
+                    .add("Token", token)
+                    .build()
+
+                val request = Request.Builder()
+                    .url("http://uncroptv.000webhostapp.com/register.php")
+                    .post(body)
+                    .build()
+
+                try {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        client.newCall(request).execute()
+                    }
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+
+            })
+
+
+
 
         viewModel = getViewModel()
         val intent = intent
@@ -120,7 +175,7 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
             viewModel.createEvent(
                     name = dialogEtName.text.toString(),
                     description = dialogDescription.text.toString(),
-                    id = userId, time =  getCurrentTime(), sortOrder = sortingOrder.toInt())
+                    id = userId, time = getCurrentTime(), sortOrder = sortingOrder.toInt())
         }
 
     }
