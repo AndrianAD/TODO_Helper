@@ -9,16 +9,26 @@
 
 
     <TextView
+        android:id="@+id/tv_welcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Welcome"
+        android:textSize="25sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <TextView
         android:id="@+id/tvWelcomeMsg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingStart="20dp"
-        android:paddingTop="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="50dp"/>
 
     <Button
-        android:id="@+id/bt_logout"
+        android:id="@+id/btLogout"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_margin="24dp"
@@ -36,22 +46,13 @@
         android:layout_marginTop="56dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="55dp"
-        app:layout_constraintBottom_toBottomOf="@+id/bt_logout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvWelcomeMsg"
-
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_welcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="TextView"
-        android:textSize="25sp"
+        app:layout_constraintBottom_toBottomOf="@+id/btLogout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+
+        app:layout_constraintTop_toBottomOf="@+id/tvWelcomeMsg" />
+
+
 
 
     <ProgressBar

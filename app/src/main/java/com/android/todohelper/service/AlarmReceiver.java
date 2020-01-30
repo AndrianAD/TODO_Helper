@@ -1,4 +1,4 @@
-package com.android.todohelper;
+package com.android.todohelper.service;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -15,6 +15,9 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import androidx.core.app.NotificationCompat;
 
+
+import com.android.todohelper.R;
+import com.android.todohelper.activity.LoginActivity;
 
 import java.util.Random;
 

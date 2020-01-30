@@ -1,4 +1,4 @@
-package com.android.todohelper
+package com.android.todohelper.adapter
 
 import android.app.AlertDialog
 import android.content.Context
@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import com.android.todohelper.R
 import com.android.todohelper.data.Event
 import com.android.todohelper.dragAndDrop.ItemTouchHelperAdapter
 import com.android.todohelper.retrofit.Repository

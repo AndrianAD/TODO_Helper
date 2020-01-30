@@ -1,4 +1,4 @@
-package com.android.todohelper
+package com.android.todohelper.activity
 
 import android.app.AlarmManager
 import android.app.Dialog
@@ -23,9 +23,14 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.android.todohelper.App
+import com.android.todohelper.R
+import com.android.todohelper.activity.viewModel.BaseViewModel
+import com.android.todohelper.adapter.RecyclerAdapter
 import com.android.todohelper.data.Event
 import com.android.todohelper.dragAndDrop.SimpleItemTouchHelperCallback
 import com.android.todohelper.retrofit.NetworkResponse
+import com.android.todohelper.service.AlarmReceiver
 import com.android.todohelper.utils.*
 import com.github.florent37.singledateandtimepicker.dialog.SingleDateAndTimePickerDialog
 import com.google.android.gms.tasks.OnCompleteListener
@@ -43,16 +48,16 @@ import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
 
-class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
+class UserActivity : BaseActivity(),
+    RecyclerAdapter.OnClickEvent {
 
     private lateinit var adapter: RecyclerAdapter
-    var layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
+    private var layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
     lateinit var viewModel: BaseViewModel
-    var sortingOrder: String = ""
+    private var sortingOrder: String = ""
     private var userId: Int = 0
     lateinit var dialog: Dialog
-
-    lateinit var broadCastReceiver: BroadcastReceiver
+    private lateinit var broadCastReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,7 +88,9 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
         tvWelcomeMsg.text = "$name  $lastName"
         sortingOrder = sharedPreferences!!.get(SORTING_ORDER, "0")
 
-        adapter = RecyclerAdapter(context = this, onClickEvent = this)
+        adapter = RecyclerAdapter(
+                context = this,
+                onClickEvent = this)
         adapter.setArrayList(ArrayList())
         val callback: ItemTouchHelper.Callback = SimpleItemTouchHelperCallback(adapter)
         val touchHelper = ItemTouchHelper(callback)
@@ -99,6 +106,15 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
             createEvent()
         }
 
+        btLogout.setOnClickListener {
+            App.instance.clearPreferances()
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
+
+
+        //--------------------live data---------------------------->
+
         viewModel.createEventLiveData.observe(this, Observer {
             when (it) {
                 is NetworkResponse.Success -> {
@@ -112,7 +128,6 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
                 }
             }
         })
-
 
         viewModel.addEventToUserLiveData.observe(this, Observer {
             when (it) {
@@ -146,45 +161,31 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
             }
         })
 
-
-        //onCreate.........................................
+        //onCreate end .........................................
     }
 
     private fun getAndSendFirebaseToken() {
-        FirebaseInstanceId.getInstance().instanceId
-            .addOnCompleteListener(OnCompleteListener { task ->
-                if (!task.isSuccessful) {
-                    Log.w("Firebase", "getInstanceId failed", task.exception)
-                    return@OnCompleteListener
-                }
-                // Get new Instance ID token
-                val token = task.result?.token
 
-                // Log and toast
-                Log.d("Firebase", token.toString())
-                // Toast.makeText(baseContext, token.toString(), Toast.LENGTH_SHORT).show()
 
-                //send token
-                val client = OkHttpClient()
-                val body: RequestBody = FormBody.Builder()
-                    .add("Token", token)
-                    .add("user_id", userId.toString())
-                    .build()
 
-                val request = Request.Builder()
-                    .url("http://uncroptv.000webhostapp.com/register.php")
-                    .post(body)
-                    .build()
+        val client = OkHttpClient()
+        val body: RequestBody = FormBody.Builder()
+            .add("Token", App.token)
+            .add("user_id", userId.toString())
+            .build()
 
-                try {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        client.newCall(request).execute()
-                    }
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
+        val request = Request.Builder()
+            .url("http://uncroptv.000webhostapp.com/register.php")
+            .post(body)
+            .build()
 
-            })
+        try {
+            CoroutineScope(Dispatchers.IO).launch {
+                client.newCall(request).execute()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
 
@@ -196,6 +197,7 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
         var dialogProgress = dialog.findViewById<ProgressBar>(R.id.dialogProgress)
         dialog.show()
         dialogEtName.text.clear()
+        dialogDescription.text.clear()
 
         showKeyboard(dialogEtName, null)
 
@@ -314,7 +316,7 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
     }
 
     private fun createDialog(layout: Int): Dialog {
-        var dialog = Dialog(this)
+        val dialog = Dialog(this)
         dialog.setContentView(layout)
         dialog.setTitle("Введите название:")
         dialog.window!!.setLayout(

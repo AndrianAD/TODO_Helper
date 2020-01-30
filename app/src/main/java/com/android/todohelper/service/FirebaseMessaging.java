@@ -1,4 +1,4 @@
-package com.android.todohelper;
+package com.android.todohelper.service;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -15,16 +15,13 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.android.todohelper.App;
+import com.android.todohelper.R;
+import com.android.todohelper.activity.LoginActivity;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import java.io.IOException;
 import java.util.Random;
-
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 
 public class FirebaseMessaging extends FirebaseMessagingService {
 
@@ -34,10 +31,10 @@ public class FirebaseMessaging extends FirebaseMessagingService {
     String CHANNEL_ID = "CHANNEL_ID";
 
 
-
     @Override
     public void onNewToken(String token) {
         Log.d(TAG, "Refreshed token: " + token);
+        App.token = token;
 
         // If you want to send messages to this application instance or
         // manage this apps subscriptions on the server side, send the
@@ -80,11 +77,11 @@ public class FirebaseMessaging extends FirebaseMessagingService {
 
 
         String CHANNEL_ID = "CHANNEL_ID";
-        int notificationID =123;
+        int notificationID = 123;
         createNotificationChannel(getBaseContext());
 
         Intent actionIntent = new Intent(getBaseContext(), LoginActivity.class);
-        int requestCode=new Random().nextInt(1000);
+        int requestCode = new Random().nextInt(1000);
         PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), requestCode, actionIntent, 0);
 
 

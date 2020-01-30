@@ -1,12 +1,12 @@
-package com.android.todohelper
+package com.android.todohelper.activity
 
 import android.Manifest
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.lifecycle.Observer
+import com.android.todohelper.R
+import com.android.todohelper.activity.viewModel.BaseViewModel
 import com.android.todohelper.data.User
 import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.utils.*
@@ -20,15 +20,13 @@ const val PERMISSION_REQUEST_RECORD_AUDIO = 0
 class LoginActivity : BaseActivity() {
 
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         if (sharedPreferences!!.contains(SHARED_CURRENT_USER)) {
             var json = sharedPreferences!!.get(SHARED_CURRENT_USER, "")
             startActivity(userActivityIntent(Gson().fromJson(json, User::class.java)))
-            overridePendingTransition(0,0)
+            overridePendingTransition(0, 0)
             finish()
         }
         setContentView(R.layout.activity_login)
@@ -43,8 +41,15 @@ class LoginActivity : BaseActivity() {
             when (it) {
                 is NetworkResponse.Success -> {
                     it.output as List<User>
-                    sharedPreferences!!.put(SHARED_CURRENT_USER, Gson().toJson(it.output[0]))
-                    startActivity(userActivityIntent(it.output[0]))
+                    if (it.output.isEmpty()) {
+                        makeAllertDialogNO(message = "Login Failed", negativeButton = "Retry")
+                        return@Observer
+                    }
+                    else {
+                        sharedPreferences!!.put(SHARED_CURRENT_USER, Gson().toJson(it.output[0]))
+                        startActivity(userActivityIntent(it.output[0]))
+                    }
+
                 }
                 is NetworkResponse.Error -> toast(it.message)
             }
@@ -57,9 +62,6 @@ class LoginActivity : BaseActivity() {
             if (email.isEmpty().not() && password.isEmpty().not()) {
                 viewModel.login(email = email, password = password)
 
-            }
-            else {
-                makeAllertDialogNO(message = "Login Failed", negativeButton = "Retry")
             }
         }
     }
@@ -116,7 +118,6 @@ class LoginActivity : BaseActivity() {
                                     )
         }
     }
-
 
 
 }

@@ -1,4 +1,4 @@
-package com.android.todohelper
+package com.android.todohelper.activity.viewModel
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -6,9 +6,11 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.todohelper.App
 import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.retrofit.Repository
 import com.android.todohelper.utils.SingleLiveEvent
+import com.android.todohelper.utils.hasNetworkConnection
 import kotlinx.coroutines.launch
 import org.koin.core.KoinComponent
 import org.koin.core.get
@@ -95,34 +97,10 @@ class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
     }
 
 
-    private fun hasNetworkConnection(): Boolean {
-        val cm =
-            App.instance.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        if (cm != null) {
-            if (Build.VERSION.SDK_INT < 23) {
-                val ni = cm.activeNetworkInfo
-                if (ni != null) {
-                    return ni.isConnected && (ni.type == ConnectivityManager.TYPE_WIFI || ni.type == ConnectivityManager.TYPE_MOBILE)
-                }
-            }
-            else {
-                val n = cm.activeNetwork
-                if (n != null) {
-                    val nc = cm.getNetworkCapabilities(n)
-                    return nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || nc.hasTransport(
-                            NetworkCapabilities.TRANSPORT_WIFI
-                                                                                                     )
-                }
-            }
-        }
-        return false
-    }
-
     fun notifyUser(email: String, message: String) {
         if (hasNetworkConnection()) {
             repository.notify(
-                    email, message,notifyUserLiveData)
+                    email, message, notifyUserLiveData)
         }
         else editEventLiveData.postValue(NetworkResponse.Error("No Internet"))
     }

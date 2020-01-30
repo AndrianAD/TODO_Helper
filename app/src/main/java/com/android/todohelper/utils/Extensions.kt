@@ -10,7 +10,6 @@ import android.text.Editable
 import android.util.Log
 import android.util.Patterns
 import android.view.View
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.MainThread
@@ -19,7 +18,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.android.todohelper.UserActivity
+import com.android.todohelper.activity.UserActivity
 import com.android.todohelper.data.User
 import com.google.android.material.snackbar.Snackbar
 import java.text.SimpleDateFormat
@@ -43,7 +42,7 @@ fun Context.toast(message: CharSequence) =
 fun Context.userActivityIntent(it: User): Intent {
     return Intent(this, UserActivity::class.java).addFlags(
         Intent.FLAG_ACTIVITY_CLEAR_TASK
-    ).addFlags(
+                                                          ).addFlags(
         Intent.FLAG_ACTIVITY_NEW_TASK
     ).apply {
         putExtra("name", it.name)

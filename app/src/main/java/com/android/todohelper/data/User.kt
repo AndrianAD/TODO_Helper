@@ -8,6 +8,5 @@ data class User(
     var lastName: String,
     var email: String,
     var password: String,
-    var id: Int,
-    var role: String
+    var id: Int
 )

@@ -130,6 +130,26 @@ class Repository() {
                 }
             })
     }
+
+    fun registerUser(
+        name: String,
+        lastName: String,
+        email: String,
+        password: String,
+        callback: SingleLiveEvent<NetworkResponse<Any>>) {
+        retrofit!!.Register(name, lastName, email, password)
+            .enqueue(object : Callback<String?> {
+                override fun onResponse(call: Call<String?>, response: Response<String?>) {
+                    callback.postValue(response.body()?.let { NetworkResponse.Success(it) })
+                }
+
+                override fun onFailure(call: Call<String?>, t: Throwable) {
+                    callback.postValue(t.message?.let { NetworkResponse.Error(it) })
+                }
+            })
+
+
+    }
 }
 
 
