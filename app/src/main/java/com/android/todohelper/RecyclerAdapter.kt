@@ -104,6 +104,8 @@ class RecyclerAdapter(var context: Context, var onClickEvent: OnClickEvent) :
         position: Int,
         viewHolder: RecyclerView.ViewHolder) {
         onClickEvent.onRecyclerLeftSwipe(eventsList[position], position,viewHolder)
+
+
     }
 
 

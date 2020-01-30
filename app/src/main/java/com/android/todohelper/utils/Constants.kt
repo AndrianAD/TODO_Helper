@@ -9,6 +9,8 @@ const val SHARED_PASSWORD = "SHARED_PASSWORD"
 const val SHARED_ROLE = "SHARED_ROLE"
 const val SHARED_ID = "SHARED_ID"
 const val SORTING_ORDER = "SORTING_ORDER"
+const val BROADCAST_ACTION = "com.android.todohelper"
+
 
 
 

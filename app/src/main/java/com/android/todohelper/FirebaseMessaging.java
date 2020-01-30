@@ -13,6 +13,7 @@ import android.provider.Settings;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -29,7 +30,9 @@ public class FirebaseMessaging extends FirebaseMessagingService {
 
 
     private static final String TAG = "FIREBASE MESSAGE";
+    private static final String ACTION_COMPLETE = "com.android.todohelper";
     String CHANNEL_ID = "CHANNEL_ID";
+
 
 
     @Override
@@ -46,6 +49,8 @@ public class FirebaseMessaging extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // ...
+        LocalBroadcastManager.getInstance(this)
+                .sendBroadcast(new Intent(ACTION_COMPLETE));
 
         // TODO(developer): Handle FCM messages here.
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
@@ -68,6 +73,10 @@ public class FirebaseMessaging extends FirebaseMessagingService {
         if (remoteMessage.getNotification() != null) {
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
         }
+
+        Intent intent = new Intent();
+        intent.setAction("com.android.todohelper");
+        sendBroadcast(intent);
 
 
         String CHANNEL_ID = "CHANNEL_ID";

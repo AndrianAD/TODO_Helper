@@ -3,8 +3,10 @@ package com.android.todohelper
 import android.app.AlarmManager
 import android.app.Dialog
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
@@ -17,6 +19,7 @@ import android.widget.EditText
 import android.widget.PopupMenu
 import android.widget.ProgressBar
 import androidx.lifecycle.Observer
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -49,57 +52,35 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
     private var userId: Int = 0
     lateinit var dialog: Dialog
 
+    lateinit var broadCastReceiver: BroadcastReceiver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user)
         progressBar.visibility = View.VISIBLE
         userId = intent.getStringExtra("id").toInt()
 
-
-        FirebaseInstanceId.getInstance().instanceId
-            .addOnCompleteListener(OnCompleteListener { task ->
-                if (!task.isSuccessful) {
-                    Log.w("Firebase", "getInstanceId failed", task.exception)
-                    return@OnCompleteListener
-                }
-                // Get new Instance ID token
-                val token = task.result?.token
-
-                // Log and toast
-                Log.d("Firebase", token.toString())
-                // Toast.makeText(baseContext, token.toString(), Toast.LENGTH_SHORT).show()
-
-                //send token
-                val client = OkHttpClient()
-                val body: RequestBody = FormBody.Builder()
-                    .add("Token", token)
-                    .add("user_id", userId.toString())
-                    .build()
-
-                val request = Request.Builder()
-                    .url("http://uncroptv.000webhostapp.com/register.php")
-                    .post(body)
-                    .build()
-
-                try {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        client.newCall(request).execute()
-                    }
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-
-            })
-
-
+        getAndSendFirebaseToken()
 
         viewModel = getViewModel()
+
+        broadCastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(contxt: Context?, intent: Intent?) {
+                when (intent?.action) {
+                    BROADCAST_ACTION -> viewModel.getEvents(userId)
+                }
+            }
+        }
+
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(broadCastReceiver, IntentFilter(BROADCAST_ACTION))
+
         val intent = intent
         val name = intent.getStringExtra("name")
-        val lastname = intent.getStringExtra("lastname")
+        val lastName = intent.getStringExtra("lastname")
 
 
-        tvWelcomeMsg.text = "$name  $lastname"
+        tvWelcomeMsg.text = "$name  $lastName"
         sortingOrder = sharedPreferences!!.get(SORTING_ORDER, "0")
 
         adapter = RecyclerAdapter(context = this, onClickEvent = this)
@@ -167,6 +148,43 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
 
 
         //onCreate.........................................
+    }
+
+    private fun getAndSendFirebaseToken() {
+        FirebaseInstanceId.getInstance().instanceId
+            .addOnCompleteListener(OnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w("Firebase", "getInstanceId failed", task.exception)
+                    return@OnCompleteListener
+                }
+                // Get new Instance ID token
+                val token = task.result?.token
+
+                // Log and toast
+                Log.d("Firebase", token.toString())
+                // Toast.makeText(baseContext, token.toString(), Toast.LENGTH_SHORT).show()
+
+                //send token
+                val client = OkHttpClient()
+                val body: RequestBody = FormBody.Builder()
+                    .add("Token", token)
+                    .add("user_id", userId.toString())
+                    .build()
+
+                val request = Request.Builder()
+                    .url("http://uncroptv.000webhostapp.com/register.php")
+                    .post(body)
+                    .build()
+
+                try {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        client.newCall(request).execute()
+                    }
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+
+            })
     }
 
 
@@ -252,7 +270,9 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
                         }
                         else {
                             viewModel.addEventToUser(emailET.text.toString(), event.eventId)
-                            viewModel.notifyUser(email = emailET.text.toString(),message = event.description)
+                            viewModel.notifyUser(
+                                    email = emailET.text.toString(),
+                                    message = event.description)
                             dialog.dismiss()
                         }
                     }
@@ -318,5 +338,12 @@ class UserActivity : BaseActivity(), RecyclerAdapter.OnClickEvent {
         }
     }
 
-
+    override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadCastReceiver)
+        super.onDestroy()
+    }
 }
+
+
+
+

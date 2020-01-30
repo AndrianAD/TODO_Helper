@@ -1,6 +1,8 @@
 package com.android.todohelper
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -16,6 +18,9 @@ import org.koin.androidx.viewmodel.ext.android.getViewModel
 const val PERMISSION_REQUEST_RECORD_AUDIO = 0
 
 class LoginActivity : BaseActivity() {
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,4 +117,8 @@ class LoginActivity : BaseActivity() {
         }
     }
 
+
+
 }
+
+
