@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
@@ -33,7 +32,6 @@ import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.service.AlarmReceiver
 import com.android.todohelper.utils.*
 import com.github.florent37.singledateandtimepicker.dialog.SingleDateAndTimePickerDialog
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.iid.FirebaseInstanceId
 import kotlinx.android.synthetic.main.activity_user.*
 import kotlinx.coroutines.CoroutineScope
@@ -65,7 +63,7 @@ class UserActivity : BaseActivity(),
         progressBar.visibility = View.VISIBLE
         userId = intent.getStringExtra("id").toInt()
 
-        getAndSendFirebaseToken()
+        SendFirebaseToken()
 
         viewModel = getViewModel()
 
@@ -107,13 +105,35 @@ class UserActivity : BaseActivity(),
         }
 
         btLogout.setOnClickListener {
+
+//            val client = OkHttpClient()
+//            val body: RequestBody = FormBody.Builder()
+//                .add("token", App.token)
+//                .build()
+//
+//            val request = Request.Builder()
+//                .url("http://uncroptv.000webhostapp.com/delete_token.php")
+//                .post(body)
+//                .build()
+//
+//            try {
+//                CoroutineScope(Dispatchers.IO).launch {
+//                    client.newCall(request).execute()
+//                }
+//            } catch (e: IOException) {
+//                e.printStackTrace()
+//            }
+
             App.instance.clearPreferances()
+            CoroutineScope(Dispatchers.IO).launch {
+                FirebaseInstanceId.getInstance().deleteInstanceId()
+            }
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
 
 
-        //--------------------live data---------------------------->
+        //--------------------live data observers ---------------------------->
 
         viewModel.createEventLiveData.observe(this, Observer {
             when (it) {
@@ -164,10 +184,7 @@ class UserActivity : BaseActivity(),
         //onCreate end .........................................
     }
 
-    private fun getAndSendFirebaseToken() {
-
-
-
+    private fun SendFirebaseToken() {
         val client = OkHttpClient()
         val body: RequestBody = FormBody.Builder()
             .add("Token", App.token)

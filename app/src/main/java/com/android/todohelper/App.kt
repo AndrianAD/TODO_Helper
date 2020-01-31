@@ -15,7 +15,8 @@ class App : Application() {
     companion object {
         lateinit var instance: App
         private var sharedPreferences: SharedPreferences? = null
-         lateinit var token:String
+        @kotlin.jvm.JvmField
+        var token: String=""
 
     }
 

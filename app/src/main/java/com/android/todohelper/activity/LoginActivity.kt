@@ -33,6 +33,8 @@ class LoginActivity : BaseActivity() {
         checkPermission()
         var viewModel: BaseViewModel = getViewModel()
 
+
+
         tvRegisterLink.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
