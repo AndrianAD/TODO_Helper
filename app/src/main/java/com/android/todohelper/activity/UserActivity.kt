@@ -1,5 +1,6 @@
 package com.android.todohelper.activity
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.Dialog
 import android.app.PendingIntent
@@ -8,15 +9,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.view.Gravity
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.view.MotionEvent.ACTION_DOWN
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.PopupMenu
-import android.widget.ProgressBar
+import android.widget.*
 import androidx.lifecycle.Observer
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -32,6 +28,7 @@ import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.service.AlarmReceiver
 import com.android.todohelper.utils.*
 import com.github.florent37.singledateandtimepicker.dialog.SingleDateAndTimePickerDialog
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.iid.FirebaseInstanceId
 import kotlinx.android.synthetic.main.activity_user.*
 import kotlinx.coroutines.CoroutineScope
@@ -56,7 +53,13 @@ class UserActivity : BaseActivity(),
     private var userId: Int = 0
     lateinit var dialog: Dialog
     private lateinit var broadCastReceiver: BroadcastReceiver
+    var dX: Float = 0.0f
+    var dY: Float = 0.0f
+    var lastAction: Int = 0
+    lateinit var createEvent: FloatingActionButton
 
+
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user)
@@ -64,9 +67,7 @@ class UserActivity : BaseActivity(),
         userId = intent.getStringExtra("id").toInt()
 
         SendFirebaseToken()
-
         viewModel = getViewModel()
-
         broadCastReceiver = object : BroadcastReceiver() {
             override fun onReceive(contxt: Context?, intent: Intent?) {
                 when (intent?.action) {
@@ -74,10 +75,8 @@ class UserActivity : BaseActivity(),
                 }
             }
         }
-
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(broadCastReceiver, IntentFilter(BROADCAST_ACTION))
-
         val intent = intent
         val name = intent.getStringExtra("name")
         val lastName = intent.getStringExtra("lastname")
@@ -99,14 +98,37 @@ class UserActivity : BaseActivity(),
         viewModel.getEvents(userId)
         dialog = createDialog(R.layout.save_form)
 
+        createEvent = FloatingActionButton(this)
 
-        addEvent.setOnClickListener {
-            createEvent()
+
+
+        createEvent.setOnTouchListener { v, event ->
+            when (event.actionMasked) {
+                ACTION_DOWN -> {
+                    dX = v.x - event.rawX
+                    dY = v.y - event.rawY
+                    lastAction = ACTION_DOWN
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    lastAction = MotionEvent.ACTION_MOVE
+                    v.y = event.rawY + dY
+                    v.x = event.rawX + dX
+                    sharedPreferences!!.put(SHARED_POSITION_LOGOUT_BUTTON, "${v.x}!${v.y}")
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (lastAction == ACTION_DOWN) {
+
+                        createEvent()
+                    }
+                }
+                else -> {
+                }
+            }; true
         }
 
         btLogout.setOnClickListener {
 
-//            val client = OkHttpClient()
+            //            val client = OkHttpClient()
 //            val body: RequestBody = FormBody.Builder()
 //                .add("token", App.token)
 //                .build()
@@ -183,6 +205,26 @@ class UserActivity : BaseActivity(),
 
         //onCreate end .........................................
     }
+
+    override fun onResume() {
+        val rel: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+        val xy: String = sharedPreferences!!.get(SHARED_POSITION_LOGOUT_BUTTON, "100!100")
+        var x = xy.takeWhile { it != '!' }.toFloat().toInt()
+        var y = xy.takeLastWhile { it != '!' }.toFloat().toInt()
+        rel.setMargins(
+                x,
+                y,
+                0,
+                0)
+        createEvent.layoutParams = rel
+        createEvent.setImageResource(android.R.drawable.ic_input_add)
+        createEvent.size = FloatingActionButton.SIZE_NORMAL
+        frameLayout.addView(createEvent, rel)
+        super.onResume()
+    }
+
 
     private fun SendFirebaseToken() {
         val client = OkHttpClient()
