@@ -67,7 +67,6 @@ class UserActivity : BaseActivity(),
         progressBar.visibility = View.VISIBLE
         userId = intent.getStringExtra("id").toInt()
 
-        sendFirebaseToken()
         viewModel = getViewModel()
         broadCastReceiver = object : BroadcastReceiver() {
             override fun onReceive(contxt: Context?, intent: Intent?) {
@@ -224,39 +223,7 @@ class UserActivity : BaseActivity(),
     }
 
 
-    private fun sendFirebaseToken() {
-        var token = App.token
-        if (App.token.length < 2) {
-            FirebaseInstanceId.getInstance().instanceId
-                .addOnCompleteListener(OnCompleteListener { task ->
-                    if (!task.isSuccessful) {
-                        return@OnCompleteListener
-                    }
-                    token = task.result?.token!!
 
-                })
-            toast("${App.token} -> $token")
-            App.token = token
-        }
-        val client = OkHttpClient()
-        val body: RequestBody = FormBody.Builder()
-            .add("Token", token)
-            .add("user_id", userId.toString())
-            .build()
-
-        val request = Request.Builder()
-            .url("http://uncroptv.000webhostapp.com/register.php")
-            .post(body)
-            .build()
-
-        try {
-            CoroutineScope(Dispatchers.IO).launch {
-                client.newCall(request).execute()
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
 
 
     private fun createEvent() {
