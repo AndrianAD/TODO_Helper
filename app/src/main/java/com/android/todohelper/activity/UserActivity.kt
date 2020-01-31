@@ -28,6 +28,7 @@ import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.service.AlarmReceiver
 import com.android.todohelper.utils.*
 import com.github.florent37.singledateandtimepicker.dialog.SingleDateAndTimePickerDialog
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.iid.FirebaseInstanceId
 import kotlinx.android.synthetic.main.activity_user.*
@@ -66,7 +67,7 @@ class UserActivity : BaseActivity(),
         progressBar.visibility = View.VISIBLE
         userId = intent.getStringExtra("id").toInt()
 
-        SendFirebaseToken()
+        sendFirebaseToken()
         viewModel = getViewModel()
         broadCastReceiver = object : BroadcastReceiver() {
             override fun onReceive(contxt: Context?, intent: Intent?) {
@@ -207,29 +208,39 @@ class UserActivity : BaseActivity(),
     }
 
     override fun onResume() {
+
         val rel: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT)
         val xy: String = sharedPreferences!!.get(SHARED_POSITION_LOGOUT_BUTTON, "100!100")
         var x = xy.takeWhile { it != '!' }.toFloat().toInt()
         var y = xy.takeLastWhile { it != '!' }.toFloat().toInt()
-        rel.setMargins(
-                x,
-                y,
-                0,
-                0)
-        createEvent.layoutParams = rel
         createEvent.setImageResource(android.R.drawable.ic_input_add)
         createEvent.size = FloatingActionButton.SIZE_NORMAL
+        createEvent.x = x.toFloat()
+        createEvent.y = y.toFloat()
         frameLayout.addView(createEvent, rel)
         super.onResume()
     }
 
 
-    private fun SendFirebaseToken() {
+    private fun sendFirebaseToken() {
+        var token = App.token
+        if (App.token.length < 2) {
+            FirebaseInstanceId.getInstance().instanceId
+                .addOnCompleteListener(OnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        return@OnCompleteListener
+                    }
+                    token = task.result?.token!!
+
+                })
+            toast("${App.token} -> $token")
+            App.token = token
+        }
         val client = OkHttpClient()
         val body: RequestBody = FormBody.Builder()
-            .add("Token", App.token)
+            .add("Token", token)
             .add("user_id", userId.toString())
             .build()
 
