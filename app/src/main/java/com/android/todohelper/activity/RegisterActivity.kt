@@ -2,7 +2,6 @@ package com.android.todohelper.activity
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.android.todohelper.R
 import com.android.todohelper.activity.viewModel.RegisterActivityViewModel
@@ -13,15 +12,15 @@ import com.google.android.material.textfield.TextInputLayout
 import kotlinx.android.synthetic.main.activity_register.*
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 
-class RegisterActivity : AppCompatActivity() {
+class RegisterActivity : BaseActivity() {
     lateinit var viewModel: RegisterActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
+        setupUI(window.decorView.rootView)
 
         viewModel = getViewModel()
-
 
         viewModel.registerUserLiveData.observe(this, Observer {
             when (it) {
@@ -30,10 +29,7 @@ class RegisterActivity : AppCompatActivity() {
                 }
                 is NetworkResponse.Error -> {
                     toast(it.message)
-
-                }
-            }
-        })
+                } } })
         btnRegister.setOnClickListener {
             if (isValid(name, lastName, email, password)) {
                 viewModel.registerUser(
@@ -43,11 +39,9 @@ class RegisterActivity : AppCompatActivity() {
                         password = password.editText?.text.toString())
             }
         }
-
-
     }
 
-    fun isValid(vararg textInput: TextInputLayout): Boolean {
+    private fun isValid(vararg textInput: TextInputLayout): Boolean {
         var isValid = true
         for (i in textInput) {
             i.apply {
@@ -58,7 +52,6 @@ class RegisterActivity : AppCompatActivity() {
                 }
             }
         }
-
         return isValid
     }
 }

@@ -41,6 +41,7 @@ class LoginActivity : BaseActivity() {
             finish()
         }
         setContentView(R.layout.activity_login)
+        setupUI(window.decorView.rootView)
         checkPermission()
         var viewModel: BaseViewModel = getViewModel()
 

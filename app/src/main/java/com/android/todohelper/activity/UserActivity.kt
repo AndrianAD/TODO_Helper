@@ -28,19 +28,13 @@ import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.service.AlarmReceiver
 import com.android.todohelper.utils.*
 import com.github.florent37.singledateandtimepicker.dialog.SingleDateAndTimePickerDialog
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.iid.FirebaseInstanceId
 import kotlinx.android.synthetic.main.activity_user.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.FormBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
 import org.koin.androidx.viewmodel.ext.android.getViewModel
-import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -128,27 +122,12 @@ class UserActivity : BaseActivity(),
 
         btLogout.setOnClickListener {
 
-            //            val client = OkHttpClient()
-//            val body: RequestBody = FormBody.Builder()
-//                .add("token", App.token)
-//                .build()
-//
-//            val request = Request.Builder()
-//                .url("http://uncroptv.000webhostapp.com/delete_token.php")
-//                .post(body)
-//                .build()
-//
-//            try {
-//                CoroutineScope(Dispatchers.IO).launch {
-//                    client.newCall(request).execute()
-//                }
-//            } catch (e: IOException) {
-//                e.printStackTrace()
-//            }
-
             App.instance.clearPreferances()
             CoroutineScope(Dispatchers.IO).launch {
-                FirebaseInstanceId.getInstance().deleteInstanceId()
+                FirebaseInstanceId.getInstance().apply {
+                    deleteInstanceId()
+                    instanceId
+                }
             }
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -221,9 +200,6 @@ class UserActivity : BaseActivity(),
         frameLayout.addView(createEvent, rel)
         super.onResume()
     }
-
-
-
 
 
     private fun createEvent() {
