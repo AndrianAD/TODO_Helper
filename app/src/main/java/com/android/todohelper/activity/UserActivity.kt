@@ -197,7 +197,11 @@ class UserActivity : BaseActivity(),
         createEvent.size = FloatingActionButton.SIZE_NORMAL
         createEvent.x = x.toFloat()
         createEvent.y = y.toFloat()
-        frameLayout.addView(createEvent, rel)
+
+        if (createEvent.parent == null) {
+            frameLayout.addView(createEvent, rel)
+        }
+
         super.onResume()
     }
 
