@@ -9,7 +9,6 @@ import android.os.SystemClock
 import android.text.Editable
 import android.util.Log
 import android.util.Patterns
-import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.MainThread
@@ -20,7 +19,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.todohelper.activity.UserActivity
 import com.android.todohelper.data.User
-import com.google.android.material.snackbar.Snackbar
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -39,16 +37,19 @@ fun Context.toast(message: CharSequence) =
     Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
 
-fun Context.userActivityIntent(it: User): Intent {
-    return Intent(this, UserActivity::class.java).addFlags(
-        Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                                          ).addFlags(
-        Intent.FLAG_ACTIVITY_NEW_TASK
-    ).apply {
-        putExtra("name", it.name)
-        putExtra("lastname", it.lastName)
-        putExtra("id", it.id.toString())
-    }
+fun Context.userActivityIntent(it: User, isFromWidget: Boolean): Intent {
+
+    return Intent(this, UserActivity::class.java)
+        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        .apply {
+            if (isFromWidget) {
+                putExtra("fromWidget", "true")
+            }
+            putExtra("name", it.name)
+            putExtra("lastname", it.lastName)
+            putExtra("id", it.id.toString())
+        }
 
 }
 
@@ -166,40 +167,10 @@ fun AppCompatActivity.shouldShowRequestPermissionRationaleCompat(permission: Str
 fun AppCompatActivity.requestPermissionsCompat(
     permissionsArray: Array<String>,
     requestCode: Int
-) {
+                                              ) {
     ActivityCompat.requestPermissions(this, permissionsArray, requestCode)
 }
 
-fun View.showSnackbar(msgId: Int, length: Int) {
-    showSnackbar(context.getString(msgId), length)
-}
-
-fun View.showSnackbar(msg: String, length: Int) {
-    showSnackbar(msg, length, null, {})
-}
-
-fun View.showSnackbar(
-    msgId: Int,
-    length: Int,
-    actionMessageId: Int,
-    action: (View) -> Unit
-) {
-    showSnackbar(context.getString(msgId), length, context.getString(actionMessageId), action)
-}
-
-fun View.showSnackbar(
-    msg: String,
-    length: Int,
-    actionMessage: CharSequence?,
-    action: (View) -> Unit
-) {
-    val snackbar = Snackbar.make(this, msg, length)
-    if (actionMessage != null) {
-        snackbar.setAction(actionMessage) {
-            action(this)
-        }.show()
-    }
-}
 
 fun preventMultiClick(): Boolean {
     if (SystemClock.elapsedRealtime() - mLastClickTime < 2000) {

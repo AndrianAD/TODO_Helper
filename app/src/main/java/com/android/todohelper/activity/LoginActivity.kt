@@ -3,7 +3,9 @@ package com.android.todohelper.activity
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import androidx.lifecycle.Observer
 import com.android.todohelper.App
 import com.android.todohelper.R
@@ -12,7 +14,6 @@ import com.android.todohelper.data.User
 import com.android.todohelper.retrofit.NetworkResponse
 import com.android.todohelper.utils.*
 import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_login.*
@@ -35,11 +36,26 @@ class LoginActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         if (sharedPreferences!!.contains(SHARED_CURRENT_USER)) {
-            var json = sharedPreferences!!.get(SHARED_CURRENT_USER, "")
-            startActivity(userActivityIntent(Gson().fromJson(json, User::class.java)))
-            overridePendingTransition(0, 0)
-            finish()
+
+            var user =
+                Gson().fromJson(sharedPreferences!!.get(SHARED_CURRENT_USER, ""), User::class.java)
+
+            if (intent.getStringExtra("fromWidget") != null) {
+                startActivity(userActivityIntent(user, true))
+                overridePendingTransition(0, 0)
+                finish()
+            }
+            else {
+                startActivity(userActivityIntent(user, false))
+                overridePendingTransition(0, 0)
+                finish()
+            }
         }
+
+
+
+
+
         setContentView(R.layout.activity_login)
         setupUI(window.decorView.rootView)
         checkPermission()
@@ -62,7 +78,7 @@ class LoginActivity : BaseActivity() {
                     else {
                         sharedPreferences!!.put(SHARED_CURRENT_USER, Gson().toJson(it.output[0]))
                         sendFirebaseToken(it.output[0].id)
-                        startActivity(userActivityIntent(it.output[0]))
+                        startActivity(userActivityIntent(it.output[0],false))
                     }
 
                 }
@@ -89,12 +105,18 @@ class LoginActivity : BaseActivity() {
         if (requestCode == PERMISSION_REQUEST_RECORD_AUDIO) {
 
             if (grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                mainLayout.showSnackbar("permission_granted", Snackbar.LENGTH_SHORT)
+                toast("permission_granted")
                 // ------go to next
             }
             else {
                 // Permission request was denied.
-                mainLayout.showSnackbar("permission_denied", Snackbar.LENGTH_SHORT)
+                toast("permission_denied")
+                val intent = Intent()
+                intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                val uri = Uri.fromParts("package", packageName, null)
+                intent.data = uri
+                startActivityForResult(intent, requestCode)
+
             }
         }
     }
@@ -104,38 +126,29 @@ class LoginActivity : BaseActivity() {
         if (checkSelfPermissionCompat(Manifest.permission.RECORD_AUDIO) ==
             PackageManager.PERMISSION_GRANTED
         ) {
-            mainLayout.showSnackbar("Permission is available", Snackbar.LENGTH_SHORT)
-            // ------go to next
+            //toast("Permission is available")
         }
         else {
-
             requestPermission()
         }
     }
 
     private fun requestPermission() {
         if (shouldShowRequestPermissionRationaleCompat(Manifest.permission.RECORD_AUDIO)) {
-            mainLayout.showSnackbar(
-                    "access_required",
-                    Snackbar.LENGTH_INDEFINITE, "Ok"
-                                   ) {
-                requestPermissionsCompat(
-                        arrayOf(Manifest.permission.RECORD_AUDIO),
-                        PERMISSION_REQUEST_RECORD_AUDIO
-                                        )
-            }
-        }
-        else {
-            mainLayout.showSnackbar("permission_not_available", Snackbar.LENGTH_SHORT)
+            toast("access_required")
             requestPermissionsCompat(
                     arrayOf(Manifest.permission.RECORD_AUDIO),
-                    PERMISSION_REQUEST_RECORD_AUDIO
-                                    )
+                    PERMISSION_REQUEST_RECORD_AUDIO)
+        }
+        else {
+            toast("permission_not_available")
+            requestPermissionsCompat(
+                    arrayOf(Manifest.permission.RECORD_AUDIO),
+                    PERMISSION_REQUEST_RECORD_AUDIO)
         }
     }
 
-
-    private fun sendFirebaseToken(userId:Int) {
+    private fun sendFirebaseToken(userId: Int) {
         var token = App.token
         if (App.token.length < 2) {
             FirebaseInstanceId.getInstance().instanceId

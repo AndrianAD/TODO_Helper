@@ -59,7 +59,10 @@ class UserActivity : BaseActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user)
         progressBar.visibility = View.VISIBLE
+        dialog = createDialog(R.layout.save_form)
+
         userId = intent.getStringExtra("id").toInt()
+
 
         viewModel = getViewModel()
         broadCastReceiver = object : BroadcastReceiver() {
@@ -90,7 +93,7 @@ class UserActivity : BaseActivity(),
         recyclerView.layoutManager = layoutManager
 
         viewModel.getEvents(userId)
-        dialog = createDialog(R.layout.save_form)
+
 
         createEvent = FloatingActionButton(this)
 
@@ -186,6 +189,10 @@ class UserActivity : BaseActivity(),
     }
 
     override fun onResume() {
+
+        if (intent.getStringExtra("fromWidget") != null) {
+            createEvent()
+        }
 
         val rel: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,

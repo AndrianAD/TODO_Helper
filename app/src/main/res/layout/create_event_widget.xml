@@ -1,0 +1,16 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#09C"
+    android:padding="@dimen/widget_margin">
+
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/appwidget_text"
+        android:text="new event"
+        android:src="@android:drawable/ic_input_add" />
+
+
+</RelativeLayout>
