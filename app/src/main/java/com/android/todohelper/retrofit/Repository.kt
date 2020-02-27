@@ -18,10 +18,14 @@ class Repository() {
                 Context.MODE_PRIVATE
                                          )
 
-    fun deleteEvent(eventId: Int) {
+    fun deleteEvent(eventId: Int, callback: SingleLiveEvent<NetworkResponse<Any>>) {
         retrofit!!.delete(eventId).enqueue(object : Callback<String?> {
-            override fun onResponse(call: Call<String?>, response: Response<String?>) {}
-            override fun onFailure(call: Call<String?>, t: Throwable) {}
+            override fun onResponse(call: Call<String?>, response: Response<String?>) {
+                callback.value = response.body()?.let { NetworkResponse.Success(it) }
+            }
+            override fun onFailure(call: Call<String?>, t: Throwable) {
+                callback.value = t.message?.let { NetworkResponse.Error(it) }
+            }
         })
     }
 

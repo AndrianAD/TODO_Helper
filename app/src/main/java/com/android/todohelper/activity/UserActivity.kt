@@ -2,12 +2,14 @@ package com.android.todohelper.activity
 
 import android.annotation.SuppressLint
 import android.app.AlarmManager
+import android.app.AlertDialog
 import android.app.Dialog
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Point
 import android.os.Bundle
 import android.view.*
 import android.view.MotionEvent.ACTION_DOWN
@@ -41,7 +43,7 @@ import kotlin.collections.ArrayList
 class UserActivity : BaseActivity(),
     RecyclerAdapter.OnClickEvent {
 
-    private lateinit var adapter: RecyclerAdapter
+    lateinit var adapter: RecyclerAdapter
     private var layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
     lateinit var viewModel: BaseViewModel
     private var sortingOrder: String = ""
@@ -65,6 +67,7 @@ class UserActivity : BaseActivity(),
 
 
         viewModel = getViewModel()
+
         broadCastReceiver = object : BroadcastReceiver() {
             override fun onReceive(contxt: Context?, intent: Intent?) {
                 when (intent?.action) {
@@ -74,6 +77,7 @@ class UserActivity : BaseActivity(),
         }
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(broadCastReceiver, IntentFilter(BROADCAST_ACTION))
+
         val intent = intent
         val name = intent.getStringExtra("name")
         val lastName = intent.getStringExtra("lastname")
@@ -94,10 +98,7 @@ class UserActivity : BaseActivity(),
 
         viewModel.getEvents(userId)
 
-
         createEvent = FloatingActionButton(this)
-
-
 
         createEvent.setOnTouchListener { v, event ->
             when (event.actionMasked) {
@@ -114,7 +115,6 @@ class UserActivity : BaseActivity(),
                 }
                 MotionEvent.ACTION_UP -> {
                     if (lastAction == ACTION_DOWN) {
-
                         createEvent()
                     }
                 }
@@ -163,6 +163,18 @@ class UserActivity : BaseActivity(),
             }
         })
 
+
+        viewModel.deleteEventLiveData.observe(this, Observer {
+            when (it) {
+                is NetworkResponse.Success -> {
+                    toast("deleted")
+                }
+                is NetworkResponse.Error -> toast(it.message)
+            }
+        })
+
+
+
         viewModel.getEventsLiveData.observe(this, Observer {
             when (it) {
                 is NetworkResponse.Success -> {
@@ -197,11 +209,19 @@ class UserActivity : BaseActivity(),
         val rel: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT)
-        val xy: String = sharedPreferences!!.get(SHARED_POSITION_LOGOUT_BUTTON, "100!100")
-        var x = xy.takeWhile { it != '!' }.toFloat().toInt()
-        var y = xy.takeLastWhile { it != '!' }.toFloat().toInt()
+
+        val size =  Point()
+        windowManager.defaultDisplay.getSize(size)
+        val width = size.x
+        val height = size.y
+
+        val xy: String = sharedPreferences!!.get(SHARED_POSITION_LOGOUT_BUTTON, "${width-250}!${height-450}")
+        val x = xy.takeWhile { it != '!' }.toFloat().toInt()
+        val y = xy.takeLastWhile { it != '!' }.toFloat().toInt()
         createEvent.setImageResource(android.R.drawable.ic_input_add)
         createEvent.size = FloatingActionButton.SIZE_NORMAL
+
+
         createEvent.x = x.toFloat()
         createEvent.y = y.toFloat()
 
@@ -242,33 +262,16 @@ class UserActivity : BaseActivity(),
 
 
     override fun onRecyclerClick(event: Event, position: Int) {
-        val dialogButtonOK =
-            dialog.findViewById<Button>(R.id.save_form_bt_OK)
-        val dialogEtName = dialog.findViewById<EditText>(R.id.save_form_et_name)
-        val dialogDescription = dialog.findViewById<EditText>(R.id.save_form_et_description)
-        var dialogProgress = dialog.findViewById<ProgressBar>(R.id.dialogProgress)
-        dialog.show()
-
-        dialogEtName.setText(event.name)
-        dialogDescription.setText(event.description)
-        showKeyboard(dialogEtName, true)
-
-        dialogButtonOK.setOnClickListener {
-            if (preventMultiClick()) {
-                return@setOnClickListener
-            }
-            if (dialogEtName.isEmpty()) {
-                toast("Заполните название")
-                return@setOnClickListener
-            }
-            //dialogProgress.visibility = View.VISIBLE
-            viewModel.editEvent(
-                    name = dialogEtName.text.toString(),
-                    description = dialogDescription.text.toString(),
-                    id = event.eventId
-                               )
-            dialog.dismiss()
+        val dialogRegisterUser = DialogRegisterUser(event)
+        val fragment = supportFragmentManager.findFragmentByTag(DialogRegisterUser.TAG)
+        if (fragment == null) {
+            dialogRegisterUser.show(supportFragmentManager, DialogRegisterUser.TAG)
         }
+        else {
+            (fragment as DialogRegisterUser).showsDialog
+        }
+
+
     }
 
     override fun onRecyclerLeftSwipe(
@@ -306,10 +309,67 @@ class UserActivity : BaseActivity(),
                 R.id.notification -> {
                     startTimePicker(event)
                 }
+
+                R.id.edit -> {
+                    val dialogButtonOK =
+                        dialog.findViewById<Button>(R.id.save_form_bt_OK)
+                    val dialogEtName = dialog.findViewById<EditText>(R.id.save_form_et_name)
+                    val dialogDescription =
+                        dialog.findViewById<EditText>(R.id.save_form_et_description)
+                    var dialogProgress = dialog.findViewById<ProgressBar>(R.id.dialogProgress)
+                    dialog.show()
+
+                    dialogEtName.setText(event.name)
+                    dialogDescription.setText(event.description)
+                    showKeyboard(dialogEtName, true)
+
+                    dialogButtonOK.setOnClickListener {
+                        if (preventMultiClick()) {
+                            return@setOnClickListener
+                        }
+                        if (dialogEtName.isEmpty()) {
+                            toast("Заполните название")
+                            return@setOnClickListener
+                        }
+                        //dialogProgress.visibility = View.VISIBLE
+                        viewModel.editEvent(
+                                name = dialogEtName.text.toString(),
+                                description = dialogDescription.text.toString(),
+                                id = event.eventId
+                                           )
+                        dialog.dismiss()
+                    }
+                }
+
+
             }
             true
         })
         popup.show()
+
+    }
+
+    override fun onRecyclerRightSwipe(
+        event: Event,
+        position: Int) {
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Вы уверены что хотите удалить?")
+            .setCancelable(false)
+            .setNegativeButton(
+                    "NO"
+                              ) { dialog, _ ->
+                dialog.cancel()
+                adapter.notifyDataSetChanged()
+            }.setPositiveButton(
+                    "YES"
+                               ) { _, _ ->
+                adapter.eventsList.removeAt(position)
+                adapter.notifyItemRemoved(position)
+                viewModel.deleteEvent(event.eventId)
+            }
+        val alert = builder.create()
+        alert.show()
 
     }
 

@@ -10,4 +10,17 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+
+    <style name="TransparentDialog" parent="@android:style/Theme">
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:layout_marginTop">80dp</item>
+        <item name="android:layout_marginStart">30dp</item>
+        <item name="android:layout_marginEnd">30dp</item>
+        <item name="android:layout_marginBottom">40dp</item>
+        <item name="android:elevation">8dp</item>
+    </style>
+
 </resources>

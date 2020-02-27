@@ -38,22 +38,15 @@ public class FirebaseMessaging extends FirebaseMessagingService {
     public void onNewToken(String token) {
         Log.d(TAG, "Refreshed token: " + token);
         App.token = token;
-
-        // If you want to send messages to this application instance or
-        // manage this apps subscriptions on the server side, send the
-        // Instance ID token to your app server.
-//          sendRegistrationToServer(token);
     }
 
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        // ...
+
         LocalBroadcastManager.getInstance(this)
                 .sendBroadcast(new Intent(ACTION_COMPLETE));
 
-        // TODO(developer): Handle FCM messages here.
-        // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
         // Check if message contains a data payload.

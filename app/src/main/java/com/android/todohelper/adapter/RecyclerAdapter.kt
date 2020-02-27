@@ -20,7 +20,7 @@ import java.util.*
 class RecyclerAdapter(var context: Context, var onClickEvent: OnClickEvent) :
     RecyclerView.Adapter<RecyclerAdapter.ViewHolder>(), ItemTouchHelperAdapter, KoinComponent {
 
-    private lateinit var eventsList: ArrayList<Event>
+    lateinit var eventsList: ArrayList<Event>
     var repository: Repository = get()
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
@@ -61,29 +61,10 @@ class RecyclerAdapter(var context: Context, var onClickEvent: OnClickEvent) :
     }
 
     override fun onSwipeRight(position: Int) {
-        val event: Event = eventsList[position]
-        deleteItem(event, position)
+        onClickEvent.onRecyclerRightSwipe(eventsList[position], position)
     }
 
-    private fun deleteItem(event: Event, position: Int) {
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle("Вы уверены что хотите удалить?")
-            .setCancelable(false)
-            .setNegativeButton(
-                    "NO"
-                              ) { dialog, _ ->
-                dialog.cancel()
-                notifyDataSetChanged()
-            }.setPositiveButton(
-                    "YES"
-                               ) { _, _ ->
-                eventsList.removeAt(position)
-                notifyItemRemoved(position)
-                repository.deleteEvent(event.eventId)
-            }
-        val alert = builder.create()
-        alert.show()
-    }
+
 
     override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
         val targetOrder: Int = if (fromPosition - toPosition > 0) {
@@ -105,14 +86,13 @@ class RecyclerAdapter(var context: Context, var onClickEvent: OnClickEvent) :
         position: Int,
         viewHolder: RecyclerView.ViewHolder) {
         onClickEvent.onRecyclerLeftSwipe(eventsList[position], position,viewHolder)
-
-
     }
 
 
     interface OnClickEvent {
         fun onRecyclerClick(event: Event, position: Int)
         fun onRecyclerLeftSwipe(event: Event, position: Int,viewHolder: RecyclerView.ViewHolder)
+        fun onRecyclerRightSwipe(event: Event, position: Int)
     }
 }
 

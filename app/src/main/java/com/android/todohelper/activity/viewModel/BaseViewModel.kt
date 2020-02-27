@@ -1,9 +1,5 @@
 package com.android.todohelper.activity.viewModel
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.todohelper.App
@@ -17,7 +13,7 @@ import org.koin.core.get
 
 
 class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
-    var repository: Repository = get()
+    private var repository: Repository = get()
     val toastMessage = SingleLiveEvent<String>()
     val editEventLiveData = SingleLiveEvent<NetworkResponse<Any>>()
     val getEventsLiveData = SingleLiveEvent<NetworkResponse<Any>>()
@@ -25,6 +21,7 @@ class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
     val createEventLiveData = SingleLiveEvent<NetworkResponse<Any>>()
     val addEventToUserLiveData = SingleLiveEvent<NetworkResponse<Any>>()
     val notifyUserLiveData = SingleLiveEvent<NetworkResponse<Any>>()
+    val deleteEventLiveData = SingleLiveEvent<NetworkResponse<Any>>()
 
 
     fun login(email: String, password: String) {
@@ -104,6 +101,17 @@ class BaseViewModel : AndroidViewModel(App.instance), KoinComponent {
         }
         else editEventLiveData.postValue(NetworkResponse.Error("No Internet"))
     }
+
+
+    fun deleteEvent(id: Int) {
+        if (hasNetworkConnection()) {
+            repository.deleteEvent(
+                    id, deleteEventLiveData)
+        }
+        else deleteEventLiveData.postValue(NetworkResponse.Error("No Internet"))
+    }
+
+
 }
 
 

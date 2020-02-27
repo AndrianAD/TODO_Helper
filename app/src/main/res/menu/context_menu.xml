@@ -6,4 +6,8 @@
     <item
         android:id="@+id/newLink"
         android:title="Добавить пользователя" />
+
+    <item
+        android:id="@+id/edit"
+        android:title="Редактировать" />
 </menu>
