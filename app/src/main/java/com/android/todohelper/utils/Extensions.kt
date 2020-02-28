@@ -9,6 +9,8 @@ import android.os.SystemClock
 import android.text.Editable
 import android.util.Log
 import android.util.Patterns
+import android.view.MotionEvent
+import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.MainThread
@@ -195,6 +197,37 @@ fun preventMultiClick(): Boolean {
 fun getCurrentTime(): String {
     return SimpleDateFormat("dd-MM-yy HH:mm")
         .format(Calendar.getInstance().time)
+}
+
+
+fun makeMovebleOnTouchListener(
+    sharedPreferences: SharedPreferences,
+    onClick: () -> Unit): View.OnTouchListener {
+    var dX: Float = 0.0f
+    var dY: Float = 0.0f
+    var lastAction: Int = 0
+    return View.OnTouchListener { v, event ->
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                dX = v.x - event.rawX
+                dY = v.y - event.rawY
+                lastAction = MotionEvent.ACTION_DOWN
+            }
+            MotionEvent.ACTION_MOVE -> {
+                lastAction = MotionEvent.ACTION_MOVE
+                v.y = event.rawY + dY
+                v.x = event.rawX + dX
+                sharedPreferences.put(SHARED_POSITION_LOGOUT_BUTTON, "${v.x}!${v.y}")
+            }
+            MotionEvent.ACTION_UP -> {
+                if (lastAction == MotionEvent.ACTION_DOWN) {
+                    onClick.invoke()
+                }
+            }
+            else -> {
+            }
+        }; true
+    }
 }
 
 

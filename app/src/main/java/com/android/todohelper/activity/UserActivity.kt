@@ -13,7 +13,6 @@ import android.graphics.Point
 import android.os.Bundle
 import android.view.Gravity
 import android.view.MenuItem
-import android.view.MotionEvent.*
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -104,30 +103,30 @@ class UserActivity : BaseActivity(),
         createEvent = FloatingActionButton(this)
 
 
-        val onTouchListener = View.OnTouchListener { v, event ->
-            when (event.actionMasked) {
-                ACTION_DOWN -> {
-                    dX = v.x - event.rawX
-                    dY = v.y - event.rawY
-                    lastAction = ACTION_DOWN
-                }
-                ACTION_MOVE -> {
-                    lastAction = ACTION_MOVE
-                    v.y = event.rawY + dY
-                    v.x = event.rawX + dX
-                    sharedPreferences!!.put(SHARED_POSITION_LOGOUT_BUTTON, "${v.x}!${v.y}")
-                }
-                ACTION_UP -> {
-                    if (lastAction == ACTION_DOWN) {
-                        createEvent()
-                    }
-                }
-                else -> {
-                }
-            }; true
-        }
+//        val onTouchListener = View.OnTouchListener { v, event ->
+//            when (event.actionMasked) {
+//                ACTION_DOWN -> {
+//                    dX = v.x - event.rawX
+//                    dY = v.y - event.rawY
+//                    lastAction = ACTION_DOWN
+//                }
+//                ACTION_MOVE -> {
+//                    lastAction = ACTION_MOVE
+//                    v.y = event.rawY + dY
+//                    v.x = event.rawX + dX
+//                    sharedPreferences!!.put(SHARED_POSITION_LOGOUT_BUTTON, "${v.x}!${v.y}")
+//                }
+//                ACTION_UP -> {
+//                    if (lastAction == ACTION_DOWN) {
+//                        createEvent()
+//                    }
+//                }
+//                else -> {
+//                }
+//            }; true
+//        }
 
-        createEvent.setOnTouchListener(onTouchListener)
+        createEvent.setOnTouchListener(makeMovebleOnTouchListener(sharedPreferences!!) { createEvent() })
 
         btLogout.setOnClickListener {
 
@@ -212,8 +211,9 @@ class UserActivity : BaseActivity(),
             createEvent()
         }
 
+
         val rel: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT)
 
         val size = Point()
@@ -235,6 +235,9 @@ class UserActivity : BaseActivity(),
         if (createEvent.parent == null) {
             frameLayout.addView(createEvent, rel)
         }
+
+
+
         super.onResume()
     }
 
@@ -318,8 +321,6 @@ class UserActivity : BaseActivity(),
                 R.id.edit -> {
                     editEvent(event)
                 }
-
-
             }
             true
         })
@@ -414,7 +415,7 @@ class UserActivity : BaseActivity(),
         dialog.setTitle("Введите название:")
         dialog.window!!.setLayout(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
+                ViewGroup.LayoutParams.WRAP_CONTENT
                                  )
         return dialog
     }
@@ -444,6 +445,8 @@ class UserActivity : BaseActivity(),
         toast(ss.toByte().toString())
     }
 }
+
+
 
 
 
