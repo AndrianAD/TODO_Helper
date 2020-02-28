@@ -41,7 +41,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class UserActivity : BaseActivity(),
-    RecyclerAdapter.OnClickEvent {
+    RecyclerAdapter.OnClickEvent, FragmentCallbackToActivity {
 
     lateinit var adapter: RecyclerAdapter
     private var layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
@@ -212,15 +212,16 @@ class UserActivity : BaseActivity(),
 
         val size =  Point()
         windowManager.defaultDisplay.getSize(size)
-        val width = size.x
-        val height = size.y
+        val widthScreen = size.x
+        val heightScreen = size.y
 
-        val xy: String = sharedPreferences!!.get(SHARED_POSITION_LOGOUT_BUTTON, "${width-250}!${height-450}")
+        val xy: String = sharedPreferences!!.get(
+                SHARED_POSITION_LOGOUT_BUTTON,
+                "${widthScreen - 250}!${heightScreen - 450}")
         val x = xy.takeWhile { it != '!' }.toFloat().toInt()
         val y = xy.takeLastWhile { it != '!' }.toFloat().toInt()
         createEvent.setImageResource(android.R.drawable.ic_input_add)
         createEvent.size = FloatingActionButton.SIZE_NORMAL
-
 
         createEvent.x = x.toFloat()
         createEvent.y = y.toFloat()
@@ -228,11 +229,8 @@ class UserActivity : BaseActivity(),
         if (createEvent.parent == null) {
             frameLayout.addView(createEvent, rel)
         }
-
         super.onResume()
     }
-
-
     private fun createEvent() {
         val dialogButtonOK =
             dialog.findViewById<Button>(R.id.save_form_bt_OK)
@@ -262,13 +260,13 @@ class UserActivity : BaseActivity(),
 
 
     override fun onRecyclerClick(event: Event, position: Int) {
-        val dialogRegisterUser = DialogRegisterUser(event)
-        val fragment = supportFragmentManager.findFragmentByTag(DialogRegisterUser.TAG)
+        val dialogRegisterUser = DetailsFragment(event)
+        val fragment = supportFragmentManager.findFragmentByTag(DetailsFragment.TAG)
         if (fragment == null) {
-            dialogRegisterUser.show(supportFragmentManager, DialogRegisterUser.TAG)
+            dialogRegisterUser.show(supportFragmentManager, DetailsFragment.TAG)
         }
         else {
-            (fragment as DialogRegisterUser).showsDialog
+            (fragment as DetailsFragment).showsDialog
         }
 
 
@@ -311,34 +309,7 @@ class UserActivity : BaseActivity(),
                 }
 
                 R.id.edit -> {
-                    val dialogButtonOK =
-                        dialog.findViewById<Button>(R.id.save_form_bt_OK)
-                    val dialogEtName = dialog.findViewById<EditText>(R.id.save_form_et_name)
-                    val dialogDescription =
-                        dialog.findViewById<EditText>(R.id.save_form_et_description)
-                    var dialogProgress = dialog.findViewById<ProgressBar>(R.id.dialogProgress)
-                    dialog.show()
-
-                    dialogEtName.setText(event.name)
-                    dialogDescription.setText(event.description)
-                    showKeyboard(dialogEtName, true)
-
-                    dialogButtonOK.setOnClickListener {
-                        if (preventMultiClick()) {
-                            return@setOnClickListener
-                        }
-                        if (dialogEtName.isEmpty()) {
-                            toast("Заполните название")
-                            return@setOnClickListener
-                        }
-                        //dialogProgress.visibility = View.VISIBLE
-                        viewModel.editEvent(
-                                name = dialogEtName.text.toString(),
-                                description = dialogDescription.text.toString(),
-                                id = event.eventId
-                                           )
-                        dialog.dismiss()
-                    }
+                    editEvent(event)
                 }
 
 
@@ -347,6 +318,37 @@ class UserActivity : BaseActivity(),
         })
         popup.show()
 
+    }
+
+    private fun editEvent(event: Event) {
+        val dialogButtonOK =
+            dialog.findViewById<Button>(R.id.save_form_bt_OK)
+        val dialogEtName = dialog.findViewById<EditText>(R.id.save_form_et_name)
+        val dialogDescription =
+            dialog.findViewById<EditText>(R.id.save_form_et_description)
+        var dialogProgress = dialog.findViewById<ProgressBar>(R.id.dialogProgress)
+        dialog.show()
+
+        dialogEtName.setText(event.name)
+        dialogDescription.setText(event.description)
+        showKeyboard(dialogEtName, true)
+
+        dialogButtonOK.setOnClickListener {
+            if (preventMultiClick()) {
+                return@setOnClickListener
+            }
+            if (dialogEtName.isEmpty()) {
+                toast("Заполните название")
+                return@setOnClickListener
+            }
+            //dialogProgress.visibility = View.VISIBLE
+            viewModel.editEvent(
+                    name = dialogEtName.text.toString(),
+                    description = dialogDescription.text.toString(),
+                    id = event.eventId
+                               )
+            dialog.dismiss()
+        }
     }
 
     override fun onRecyclerRightSwipe(
@@ -405,7 +407,7 @@ class UserActivity : BaseActivity(),
         dialog.setTitle("Введите название:")
         dialog.window!!.setLayout(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                ViewGroup.LayoutParams.MATCH_PARENT
                                  )
         return dialog
     }
@@ -427,6 +429,10 @@ class UserActivity : BaseActivity(),
     override fun onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadCastReceiver)
         super.onDestroy()
+    }
+
+    override fun fragmentCallbackToActivity(event: Event) {
+        // editEvent(event)
     }
 }
 
