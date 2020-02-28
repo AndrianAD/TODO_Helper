@@ -11,8 +11,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Point
 import android.os.Bundle
-import android.view.*
-import android.view.MotionEvent.ACTION_DOWN
+import android.view.Gravity
+import android.view.MenuItem
+import android.view.MotionEvent.*
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.lifecycle.Observer
@@ -100,20 +103,21 @@ class UserActivity : BaseActivity(),
 
         createEvent = FloatingActionButton(this)
 
-        createEvent.setOnTouchListener { v, event ->
+
+        val onTouchListener = View.OnTouchListener { v, event ->
             when (event.actionMasked) {
                 ACTION_DOWN -> {
                     dX = v.x - event.rawX
                     dY = v.y - event.rawY
                     lastAction = ACTION_DOWN
                 }
-                MotionEvent.ACTION_MOVE -> {
-                    lastAction = MotionEvent.ACTION_MOVE
+                ACTION_MOVE -> {
+                    lastAction = ACTION_MOVE
                     v.y = event.rawY + dY
                     v.x = event.rawX + dX
                     sharedPreferences!!.put(SHARED_POSITION_LOGOUT_BUTTON, "${v.x}!${v.y}")
                 }
-                MotionEvent.ACTION_UP -> {
+                ACTION_UP -> {
                     if (lastAction == ACTION_DOWN) {
                         createEvent()
                     }
@@ -122,6 +126,8 @@ class UserActivity : BaseActivity(),
                 }
             }; true
         }
+
+        createEvent.setOnTouchListener(onTouchListener)
 
         btLogout.setOnClickListener {
 
@@ -210,7 +216,7 @@ class UserActivity : BaseActivity(),
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT)
 
-        val size =  Point()
+        val size = Point()
         windowManager.defaultDisplay.getSize(size)
         val widthScreen = size.x
         val heightScreen = size.y
@@ -231,6 +237,7 @@ class UserActivity : BaseActivity(),
         }
         super.onResume()
     }
+
     private fun createEvent() {
         val dialogButtonOK =
             dialog.findViewById<Button>(R.id.save_form_bt_OK)
@@ -433,6 +440,8 @@ class UserActivity : BaseActivity(),
 
     override fun fragmentCallbackToActivity(event: Event) {
         // editEvent(event)
+        var ss = "Andrian"
+        toast(ss.toByte().toString())
     }
 }
 

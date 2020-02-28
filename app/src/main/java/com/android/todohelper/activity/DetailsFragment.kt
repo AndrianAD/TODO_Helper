@@ -24,13 +24,12 @@ class DetailsFragment(var event: Event) : DialogFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         fragmentCallbackToActivity = context as FragmentCallbackToActivity
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NO_TITLE, R.style.TransparentDialog)
-
-
     }
 
     override fun onCreateView(
@@ -52,7 +51,7 @@ class DetailsFragment(var event: Event) : DialogFragment() {
         view.description.text = event.description
 
         view.name.setOnClickListener {
-
+            fragmentCallbackToActivity.fragmentCallbackToActivity(event)
         }
 
         view.description.setOnClickListener {

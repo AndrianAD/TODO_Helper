@@ -1,4 +1,5 @@
 package com.android.todohelper.data
+
 import com.google.gson.annotations.SerializedName
 
 data class Event(
@@ -8,5 +9,4 @@ data class Event(
     @SerializedName("sort_order")
     var sortOrder: Int,
     @SerializedName("event_id")
-    var eventId: Int
-)
+    var eventId: Int)
