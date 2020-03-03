@@ -231,6 +231,45 @@ fun makeMovebleOnTouchListener(
 }
 
 
+//fun View.makeMovebleOnTouchListener(
+//    sharedPreferences: SharedPreferences,
+//    onClick: () -> Unit): View.OnTouchListener {
+//    var dX: Float = 0.0f
+//    var dY: Float = 0.0f
+//    var initialPositionX: Float = 0.0f
+//    var lastAction: Int = 0
+//    return View.OnTouchListener { v, event ->
+//        when (event.actionMasked) {
+//            MotionEvent.ACTION_DOWN -> {
+//                initialPositionX = v.x
+//                dX = v.x - event.rawX
+//                dY = v.y - event.rawY
+//                lastAction = MotionEvent.ACTION_DOWN
+//            }
+//            MotionEvent.ACTION_MOVE -> {
+//                lastAction = MotionEvent.ACTION_MOVE
+//                v.x = event.rawX + dX
+//                sharedPreferences.put(SHARED_POSITION_LOGOUT_BUTTON, "${v.x}!${v.y}")
+//            }
+//            MotionEvent.ACTION_UP -> {
+////                if (lastAction == MotionEvent.ACTION_DOWN) {
+////                    onClick.invoke()
+////                }
+//                if(v.x>500){
+//
+//                }
+//                else{
+//                    SpringAnimation(this, DynamicAnimation.TRANSLATION_X, initialPositionX).start()
+//                }
+//
+//            }
+//            else -> {
+//            }
+//        }; true
+//    }
+//}
+
+
 
 
 

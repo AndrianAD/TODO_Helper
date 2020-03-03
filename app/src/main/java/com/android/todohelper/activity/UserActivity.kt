@@ -102,30 +102,6 @@ class UserActivity : BaseActivity(),
 
         createEvent = FloatingActionButton(this)
 
-
-//        val onTouchListener = View.OnTouchListener { v, event ->
-//            when (event.actionMasked) {
-//                ACTION_DOWN -> {
-//                    dX = v.x - event.rawX
-//                    dY = v.y - event.rawY
-//                    lastAction = ACTION_DOWN
-//                }
-//                ACTION_MOVE -> {
-//                    lastAction = ACTION_MOVE
-//                    v.y = event.rawY + dY
-//                    v.x = event.rawX + dX
-//                    sharedPreferences!!.put(SHARED_POSITION_LOGOUT_BUTTON, "${v.x}!${v.y}")
-//                }
-//                ACTION_UP -> {
-//                    if (lastAction == ACTION_DOWN) {
-//                        createEvent()
-//                    }
-//                }
-//                else -> {
-//                }
-//            }; true
-//        }
-
         createEvent.setOnTouchListener(makeMovebleOnTouchListener(sharedPreferences!!) { createEvent() })
 
         btLogout.setOnClickListener {
@@ -223,7 +199,7 @@ class UserActivity : BaseActivity(),
 
         val xy: String = sharedPreferences!!.get(
                 SHARED_POSITION_LOGOUT_BUTTON,
-                "${widthScreen - 250}!${heightScreen - 450}")
+                "100!${heightScreen - 450}")
         val x = xy.takeWhile { it != '!' }.toFloat().toInt()
         val y = xy.takeLastWhile { it != '!' }.toFloat().toInt()
         createEvent.setImageResource(android.R.drawable.ic_input_add)

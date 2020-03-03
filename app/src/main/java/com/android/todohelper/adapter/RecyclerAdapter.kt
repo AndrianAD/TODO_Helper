@@ -1,6 +1,5 @@
 package com.android.todohelper.adapter
 
-import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -68,12 +67,12 @@ class RecyclerAdapter(var context: Context, var onClickEvent: OnClickEvent) :
 
     override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
         val targetOrder: Int = if (fromPosition - toPosition > 0) {
-            //moveDown
-            eventsList[toPosition].sortOrder - 1
-        }
-        else {
             //moveUp
             eventsList[toPosition].sortOrder + 1
+        }
+        else {
+            //moveDown
+            eventsList[toPosition].sortOrder - 1
         }
         val id: Int = eventsList[fromPosition].eventId
         repository.changeOrder(id, targetOrder)
